@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Acceio Media — Blog Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#060810;--surface:#0d1117;--card:#111720;--border:rgba(255,255,255,.08);
+  --accent:#00e5c3;--accent2:#6c63ff;--text:#edf2f7;--text2:#a0aec0;
+  --muted:#4a5568;--danger:#fc8181;--success:#48bb78;--warn:#f6ad55;
+  --r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+
+/* ── LOGIN ── */
+#loginPanel{max-width:400px;margin:80px auto;padding:0 20px;}
+.logo-row{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.3rem;margin-bottom:28px;justify-content:center;}
+.mark{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:grid;place-items:center;font-size:.85rem;font-weight:900;color:#000;flex-shrink:0;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:20px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:6px;}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 14px;color:var(--text);
+  font-size:.88rem;outline:none;font-family:'Outfit',sans-serif;
+  transition:border-color .2s;
+}
+.field input:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{min-height:200px;resize:vertical;line-height:1.6;}
+.err{color:var(--danger);font-size:.78rem;margin-top:8px;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:var(--r-sm);border:none;font-weight:700;font-size:.83rem;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,229,195,.25);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:var(--r-sm);cursor:pointer;font-size:.8rem;font-weight:600;font-family:'Outfit',sans-serif;}
+.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text);}
+.btn-danger{background:rgba(252,129,129,.1);color:var(--danger);border:1px solid rgba(252,129,129,.2);font-family:'Outfit',sans-serif;}
+.btn-danger:hover{background:rgba(252,129,129,.2);}
+.btn-warn{background:rgba(246,173,85,.1);color:var(--warn);border:1px solid rgba(246,173,85,.2);font-family:'Outfit',sans-serif;}
+.btn-warn:hover{background:rgba(246,173,85,.2);}
+.btn-sm{padding:6px 12px;font-size:.73rem;}
+.btn-success{background:rgba(72,187,120,.1);color:var(--success);border:1px solid rgba(72,187,120,.2);font-family:'Outfit',sans-serif;}
+.btn-success:hover{background:rgba(72,187,120,.2);}
+
+/* ── MAIN PANEL ── */
+#blogPanel{display:none;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px;}
+
+/* ── STATS BAR ── */
+.stats{display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 20px;min-width:120px;}
+.stat-val{font-size:1.6rem;font-weight:800;}
+.stat-lbl{font-size:.68rem;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.06em;}
+
+/* ── EDITOR ── */
+.editor-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:28px;display:none;}
+.editor-panel.open{display:block;}
+.editor-title{font-size:1rem;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.editor-footer{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px;}
+.toggle{width:40px;height:22px;background:var(--muted);border-radius:20px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;}
+.toggle.on::after{transform:translateX(18px);}
+.toggle-label{font-size:.83rem;color:var(--text2);}
+
+/* ── IMAGE PREVIEW ── */
+.img-preview{
+  width:100%;max-height:180px;object-fit:cover;
+  border-radius:var(--r-sm);border:1px solid var(--border);
+  margin-top:8px;display:none;
+}
+.img-preview.show{display:block;}
+
+/* ── POSTS LIST ── */
+.posts-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.posts-label{font-size:.95rem;font-weight:700;}
+.post-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;margin-bottom:10px;
+  display:flex;align-items:center;gap:16px;
+  transition:border-color .2s;
+}
+.post-card:hover{border-color:rgba(255,255,255,.12);}
+.post-thumb{width:64px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--muted);border:1px solid var(--border);overflow:hidden;}
+.post-thumb img{width:100%;height:100%;object-fit:cover;}
+.post-body{flex:1;min-width:0;}
+.post-title{font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.post-excerpt{font-size:.73rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px;}
+.post-meta{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.post-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.status-chip{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:20px;flex-shrink:0;}
+.chip-live{background:rgba(72,187,120,.12);color:var(--success);}
+.chip-draft{background:rgba(160,174,192,.1);color:var(--text2);}
+.no-posts{text-align:center;padding:48px 20px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);}
+.no-posts-icon{font-size:2.4rem;margin-bottom:10px;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px 18px;
+  font-size:.82rem;font-weight:600;
+  display:none;gap:8px;align-items:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  max-width:320px;
+}
+.toast.show{display:flex;}
+.toast.ok{border-color:rgba(72,187,120,.3);color:var(--success);}
+.toast.err{border-color:rgba(252,129,129,.3);color:var(--danger);}
+
+/* ── CONFIRM OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;place-items:center;}
+.overlay.show{display:grid;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;width:380px;max-width:90vw;}
+.modal h3{font-size:.95rem;font-weight:700;margin-bottom:12px;}
+.modal p{font-size:.83rem;color:var(--text2);line-height:1.7;margin-bottom:20px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.tb-btn{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:6px;padding:4px 10px;font-size:.75rem;
+  color:var(--text2);cursor:pointer;font-family:'Outfit',sans-serif;
+  font-weight:600;transition:all .15s;
+}
+.tb-btn:hover{background:rgba(0,229,195,.08);color:var(--accent);border-color:rgba(0,229,195,.2);}
+
+@media(max-width:600px){
+  .row-2{grid-template-columns:1fr;}
+  .post-excerpt{display:none;}
+  .stats{gap:8px;}
+  .stat{min-width:90px;padding:12px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPanel">
+  <div class="logo-row"><div class="mark">A</div>Acceio Media · Blog Manager</div>
+  <div class="card">
+    <h2>Admin Sign In</h2>
+    <div class="field"><label>Username</label><input id="aUser" type="text" placeholder="admin" autocomplete="username"/></div>
+    <div class="field"><label>Password</label><input id="aPass" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
+    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- BLOG PANEL -->
+<div id="blogPanel">
+  <div class="header">
+    <div class="logo-row" style="margin:0"><div class="mark">A</div>Acceio Media · Blog Manager</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="btn-ghost btn-sm btn" href="/blog.html" target="_blank" rel="noopener">🌐 View Blog</a>
+      <button class="btn btn-primary btn-sm" onclick="openEditor()">+ New Post</button>
+      <button class="btn-ghost btn-sm btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Posts</div></div>
+      <div class="stat"><div class="stat-val" id="statLive" style="color:var(--success)">—</div><div class="stat-lbl">Published</div></div>
+      <div class="stat"><div class="stat-val" id="statDraft" style="color:var(--warn)">—</div><div class="stat-lbl">Drafts</div></div>
+    </div>
+
+    <!-- EDITOR -->
+    <div class="editor-panel" id="editorPanel">
+      <div class="editor-title" id="editorTitle">✏️ New Blog Post</div>
+
+      <input type="hidden" id="editPostId"/>
+
+      <div class="field">
+        <label>Post Title *</label>
+        <input id="pTitle" type="text" placeholder="e.g. How AI is Changing Digital Marketing in 2025" maxlength="120"/>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Tags <span style="color:var(--muted);font-weight:400">(comma separated)</span></label>
+          <input id="pTags" type="text" placeholder="SEO, Social Media, AI Marketing"/>
+        </div>
+        <div class="field">
+          <label>Cover Image URL <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <input id="pImage" type="url" placeholder="https://…/image.jpg" oninput="previewImg(this.value)"/>
+          <img id="imgPreview" class="img-preview" alt="Cover image preview for blog post"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Short Description <span style="color:var(--muted);font-weight:400">(shown on blog listing — 1–2 sentences)</span></label>
+        <input id="pExcerpt" type="text" placeholder="A brief summary of what this post covers…" maxlength="200"/>
+      </div>
+
+      <div class="field">
+        <label>Post Content *</label>
+        <div class="toolbar">
+          <button class="tb-btn" onclick="insertMd('**','**')"><b>B</b></button>
+          <button class="tb-btn" onclick="insertMd('*','*')"><i>I</i></button>
+          <button class="tb-btn" onclick="insertMd('\n## ','')">H2</button>
+          <button class="tb-btn" onclick="insertMd('\n### ','')">H3</button>
+          <button class="tb-btn" onclick="insertMd('\n- ','')">• List</button>
+          <button class="tb-btn" onclick="insertMd('\n1. ','')">1. List</button>
+          <button class="tb-btn" onclick="insertMd('\n> ','')">Quote</button>
+          <button class="tb-btn" onclick="insertMd('\n---\n','')">Divider</button>
+          <button class="tb-btn" onclick="insertMd('[link text](',')')">🔗 Link</button>
+        </div>
+        <textarea id="pBody" placeholder="Write your blog post content here. You can use Markdown formatting — **bold**, *italic*, ## Headings, - bullet lists, etc.&#10;&#10;Tip: Write naturally, like you're talking to a client. Google loves helpful, clear content!"></textarea>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Supports Markdown. Minimum ~100 characters recommended for SEO.</div>
+      </div>
+
+      <div class="editor-footer">
+        <div class="toggle-row">
+          <button class="toggle" id="pubToggle" onclick="togglePublished()" title="Toggle publish status"></button>
+          <span class="toggle-label" id="pubLabel">Save as Draft</span>
+        </div>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" onclick="closeEditor()">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="savePost()">💾 Save Post</button>
+      </div>
+      <div class="err" id="editorErr"></div>
+    </div>
+
+    <!-- POSTS LIST -->
+    <div class="posts-header">
+      <div class="posts-label">📝 All Posts</div>
+      <button class="btn-ghost btn-sm btn" onclick="loadPosts()">↻ Refresh</button>
+    </div>
+    <div id="postsList"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal">
+    <h3 id="confirmTitle" style="color:var(--danger)">Confirm Delete</h3>
+    <p id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost btn" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn" onclick="runConfirm()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://acceio-api.onrender.com';
+
+let token = localStorage.getItem('acceio_admin_token');
+let allPosts = [];
+let publishedState = false;
+let _confirmFn = null;
+
+// Auto-login if token saved
+if (token) showBlogPanel();
+document.getElementById('aPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── AUTH ──
+async function doLogin() {
+  const u = document.getElementById('aUser').value.trim();
+  const p = document.getElementById('aPass').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch(`${API}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    if (data.user.plan !== 'Scale' && data.user.username !== 'admin')
+      throw new Error('Admin access required');
+    token = data.token;
+    localStorage.setItem('acceio_admin_token', token);
+    showBlogPanel();
+  } catch (e) {
+    err.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('acceio_admin_token');
+  location.reload();
+}
+
+function showBlogPanel() {
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('blogPanel').style.display = 'block';
+  loadPosts();
+}
+
+// ── LOAD POSTS ──
+async function loadPosts() {
+  try {
+    const res = await fetch(`${API}/api/admin/blog/posts`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) { if (res.status === 401 || res.status === 403) { doLogout(); return; } throw new Error('Failed to load'); }
+    allPosts = await res.json();
+    renderStats();
+    renderPosts();
+  } catch (e) {
+    toast('Error loading posts: ' + e.message, 'err');
+  }
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = allPosts.length;
+  document.getElementById('statLive').textContent  = allPosts.filter(p => p.published).length;
+  document.getElementById('statDraft').textContent = allPosts.filter(p => !p.published).length;
+}
+
+function renderPosts() {
+  const el = document.getElementById('postsList');
+  if (!allPosts.length) {
+    el.innerHTML = `<div class="no-posts"><div class="no-posts-icon">📝</div><div style="font-size:.9rem;font-weight:700;margin-bottom:4px">No posts yet</div><div style="font-size:.78rem">Click "+ New Post" to write your first Acceio Media blog post.</div></div>`;
+    return;
+  }
+  el.innerHTML = allPosts.map(p => `
+    <div class="post-card">
+      <div class="post-thumb">
+        ${p.image_url ? `<img src="${p.image_url}" alt="${p.title} - Acceio Media blog" onerror="this.parentNode.textContent='📄'"/>` : '📄'}
+      </div>
+      <div class="post-body">
+        <div class="post-title">${p.title}</div>
+        <div class="post-excerpt">${p.excerpt || ''}</div>
+        <div class="post-meta">${new Date(p.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${p.tags ? ' · ' + p.tags : ''}</div>
+      </div>
+      <span class="status-chip ${p.published ? 'chip-live' : 'chip-draft'}">${p.published ? '🟢 Live' : '⚫ Draft'}</span>
+      <div class="post-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editPost(${p.id})">✏️ Edit</button>
+        <button class="btn btn-${p.published ? 'warn' : 'success'} btn-sm" onclick="togglePostPublish(${p.id},${p.published})">${p.published ? '⏸ Unpublish' : '🚀 Publish'}</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete(${p.id},'${p.title.replace(/'/g,"\\'")}')">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── EDITOR ──
+function openEditor(prefill = null) {
+  document.getElementById('editPostId').value = '';
+  document.getElementById('pTitle').value   = prefill?.title || '';
+  document.getElementById('pBody').value    = prefill?.body || '';
+  document.getElementById('pExcerpt').value = prefill?.excerpt || '';
+  document.getElementById('pTags').value    = prefill?.tags || '';
+  document.getElementById('pImage').value   = prefill?.image_url || '';
+  document.getElementById('editorErr').textContent = '';
+  publishedState = prefill?.published || false;
+  updateToggleUI();
+  previewImg(prefill?.image_url || '');
+  document.getElementById('editorTitle').textContent = '✏️ New Blog Post';
+  document.getElementById('saveBtn').textContent = '💾 Save Post';
+  document.getElementById('editorPanel').classList.add('open');
+  document.getElementById('editorPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function editPost(id) {
+  const p = allPosts.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('editPostId').value = p.id;
+  document.getElementById('pTitle').value   = p.title || '';
+  document.getElementById('pBody').value    = p.body || '';
+  document.getElementById('pExcerpt').value = p.excerpt || '';
+  document.getElementById('pTags').value    = p.tags || '';
+  document.getElementById('pImage').value   = p.image_url || '';
+  document.getElementById('editorErr').textContent = '';
+  publishedState = !!p.published;
+  updateToggleUI();
+  previewImg(p.image_url || '');
+  document.getElementById('editorTitle').textContent = `✏️ Edit: ${p.title}`;
+  document.getElementById('saveBtn').textContent = '💾 Update Post';
+  document.getElementById('editorPanel').classList.add('open');
+  document.getElementById('editorPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeEditor() {
+  document.getElementById('editorPanel').classList.remove('open');
+}
+
+function togglePublished() {
+  publishedState = !publishedState;
+  updateToggleUI();
+}
+function updateToggleUI() {
+  const toggle = document.getElementById('pubToggle');
+  const label  = document.getElementById('pubLabel');
+  toggle.classList.toggle('on', publishedState);
+  label.textContent = publishedState ? '🟢 Publish Live on Blog' : '⚫ Save as Draft';
+  label.style.color = publishedState ? 'var(--success)' : 'var(--text2)';
+}
+
+async function savePost() {
+  const id      = document.getElementById('editPostId').value;
+  const title   = document.getElementById('pTitle').value.trim();
+  const body    = document.getElementById('pBody').value.trim();
+  const excerpt = document.getElementById('pExcerpt').value.trim();
+  const tags    = document.getElementById('pTags').value.trim();
+  const image_url = document.getElementById('pImage').value.trim();
+  const errEl   = document.getElementById('editorErr');
+
+  errEl.textContent = '';
+  if (!title) { errEl.textContent = 'Post title is required.'; return; }
+  if (!body)  { errEl.textContent = 'Post content is required.'; return; }
+  if (body.length < 50) { errEl.textContent = 'Content is too short — write at least a few sentences.'; return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = { title, body, excerpt, tags, image_url, published: publishedState };
+  const url    = id ? `${API}/api/admin/blog/posts/${id}` : `${API}/api/admin/blog/posts`;
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    toast(publishedState ? '🟢 Post published live!' : '⚫ Draft saved!', 'ok');
+    closeEditor();
+    loadPosts();
+  } catch (e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = id ? '💾 Update Post' : '💾 Save Post';
+  }
+}
+
+async function togglePostPublish(id, currentlyPublished) {
+  try {
+    const res = await fetch(`${API}/api/admin/blog/posts/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ published: !currentlyPublished })
+    });
+    if (!res.ok) throw new Error('Update failed');
+    toast(currentlyPublished ? '⏸ Post unpublished' : '🟢 Post is now live!', 'ok');
+    loadPosts();
+  } catch (e) {
+    toast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── DELETE ──
+function confirmDelete(id, title) {
+  document.getElementById('confirmTitle').textContent = '🗑 Delete Post';
+  document.getElementById('confirmMsg').textContent   = `Permanently delete "${title}"? This cannot be undone.`;
+  _confirmFn = async () => {
+    const res = await fetch(`${API}/api/admin/blog/posts/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Delete failed'); }
+    toast('🗑 Post deleted', 'ok');
+    loadPosts();
+  };
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  _confirmFn = null;
+}
+async function runConfirm() {
+  if (!_confirmFn) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true; btn.textContent = 'Deleting…';
+  try { await _confirmFn(); } catch (e) { toast('Error: ' + e.message, 'err'); }
+  btn.disabled = false; btn.textContent = 'Delete';
+  closeConfirm();
+}
+
+// ── IMAGE PREVIEW ──
+function previewImg(url) {
+  const img = document.getElementById('imgPreview');
+  if (url && url.startsWith('http')) {
+    img.src = url;
+    img.classList.add('show');
+    img.onerror = () => img.classList.remove('show');
+  } else {
+    img.classList.remove('show');
+  }
+}
+
+// ── MARKDOWN TOOLBAR ──
+function insertMd(before, after) {
+  const ta = document.getElementById('pBody');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const sel   = ta.value.substring(start, end);
+  ta.value = ta.value.substring(0, start) + before + sel + after + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = start + before.length;
+  ta.selectionEnd   = start + before.length + sel.length;
+}
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
