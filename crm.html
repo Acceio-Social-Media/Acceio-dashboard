@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Acceio CRM — Leads Dashboard</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f4f6f9;--surface:#fff;--card:#fff;
+  --border:#e5e9f0;--border2:#d0d7e3;
+  --ink:#111827;--ink2:#4b5563;--muted:#9ca3af;
+  --accent:#16a34a;--accent2:#1d4ed8;--warn:#d97706;--danger:#dc2626;
+  --lime:#c8ff3e;
+  --r:10px;--r-sm:6px;--ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── LOGIN ── */
+#loginPage{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0f1a0e 0%,#1a2e18 100%);
+}
+.login-box{
+  background:var(--surface);border-radius:16px;padding:40px;
+  width:400px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.25);
+}
+.login-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.login-mark{width:36px;height:36px;background:#16a34a;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:1rem}
+.login-title{font-size:1.1rem;font-weight:700}
+.login-sub{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin-bottom:6px}
+.field input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--ink);outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--accent)}
+.btn-login{width:100%;background:#16a34a;color:#fff;border:none;padding:12px;border-radius:var(--r-sm);font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s}
+.btn-login:hover{background:#15803d}
+.login-err{font-size:.8rem;color:var(--danger);margin-top:10px;display:none}
+
+/* ── MAIN LAYOUT ── */
+#crmPage{display:none;flex-direction:column;min-height:100vh}
+
+/* Topbar */
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  height:56px;display:flex;align-items:center;
+  padding:0 24px;gap:14px;position:sticky;top:0;z-index:100;
+}
+.topbar-brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:1rem}
+.topbar-mark{width:28px;height:28px;background:#16a34a;border-radius:7px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.8rem}
+.topbar-title{font-size:.85rem;font-weight:600;color:var(--ink2);border-left:1px solid var(--border);padding-left:14px;margin-left:6px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topbar-btn{font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:var(--r-sm);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--ink2);transition:all .15s;font-family:'Outfit',sans-serif}
+.topbar-btn:hover{background:var(--bg);color:var(--ink)}
+.topbar-btn.primary{background:#16a34a;color:#fff;border-color:#16a34a}
+.topbar-btn.primary:hover{background:#15803d}
+
+/* Content */
+.crm-body{flex:1;padding:24px;max-width:1400px;width:100%;margin:0 auto}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat-card:nth-child(1)::before{background:#16a34a}
+.stat-card:nth-child(2)::before{background:#1d4ed8}
+.stat-card:nth-child(3)::before{background:#d97706}
+.stat-card:nth-child(4)::before{background:#7c3aed}
+.stat-card:nth-child(5)::before{background:#0891b2}
+.stat-card:nth-child(6)::before{background:#dc2626}
+.stat-val{font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:.73rem;color:var(--muted);font-weight:500}
+
+/* ── TOOLBAR ── */
+.crm-toolbar{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:16px;flex-wrap:wrap;
+}
+.search-wrap{flex:1;min-width:200px;max-width:320px;position:relative}
+.search-wrap input{
+  width:100%;background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 12px 8px 34px;
+  font-size:.85rem;font-family:'Outfit',sans-serif;color:var(--ink);outline:none;
+  transition:border-color .2s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--muted)}
+.filter-select{
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);
+  padding:8px 12px;font-size:.83rem;font-family:'Outfit',sans-serif;color:var(--ink);
+  cursor:pointer;outline:none;
+}
+.filter-select:focus{border-color:var(--accent)}
+.status-tabs{display:flex;gap:4px;background:var(--bg);border-radius:var(--r-sm);padding:3px}
+.status-tab{
+  padding:5px 12px;border-radius:6px;font-size:.78rem;font-weight:600;
+  cursor:pointer;color:var(--muted);transition:all .15s;border:none;background:none;
+  font-family:'Outfit',sans-serif;
+}
+.status-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ── LEADS TABLE ── */
+.leads-table-wrap{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+}
+.leads-table{width:100%;border-collapse:collapse}
+.leads-table th{
+  font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);text-align:left;padding:10px 14px;
+  border-bottom:1px solid var(--border);background:var(--bg);
+}
+.leads-table th.sortable{cursor:pointer;user-select:none}
+.leads-table th.sortable:hover{color:var(--ink)}
+.leads-table td{
+  padding:12px 14px;font-size:.85rem;
+  border-bottom:1px solid var(--border);vertical-align:middle;
+}
+.leads-table tr:last-child td{border-bottom:none}
+.leads-table tr{transition:background .12s}
+.leads-table tr:hover{background:#f9fafb}
+.leads-table tr.selected{background:#f0fdf4}
+
+/* status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.s-new       {background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+.s-contacted {background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.s-qualified {background:#fefce8;color:#854d0e;border:1px solid #fde68a}
+.s-proposal  {background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe}
+.s-won       {background:#f0fdf4;color:#166534;border:1px solid #86efac}
+.s-lost      {background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+
+.lead-name{font-weight:700;color:var(--ink)}
+.lead-company{font-size:.76rem;color:var(--muted);margin-top:1px}
+.lead-email{color:var(--accent2);font-size:.82rem}
+.lead-date{font-size:.76rem;color:var(--muted)}
+.lead-source{font-size:.73rem;background:var(--bg);padding:2px 8px;border-radius:20px;color:var(--ink2);border:1px solid var(--border)}
+
+/* action btns */
+.action-btns{display:flex;gap:6px}
+.act-btn{
+  padding:5px 10px;border-radius:var(--r-sm);font-size:.73rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border2);background:var(--surface);
+  color:var(--ink2);transition:all .15s;font-family:'Outfit',sans-serif;
+}
+.act-btn:hover{background:var(--bg)}
+.act-btn.edit{border-color:#1d4ed8;color:#1d4ed8}
+.act-btn.edit:hover{background:#eff6ff}
+.act-btn.del{border-color:#dc2626;color:#dc2626}
+.act-btn.del:hover{background:#fef2f2}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:2.8rem;margin-bottom:12px}
+.empty-msg{font-size:.95rem;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.empty-sub{font-size:.83rem}
+
+/* ── PIPELINE KANBAN ── */
+#pipelineView{display:none}
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.kanban-col{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px;min-width:230px;flex-shrink:0;
+}
+.kanban-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.kanban-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.kanban-count{
+  font-size:.7rem;font-weight:700;background:var(--surface);
+  border:1px solid var(--border);padding:1px 7px;border-radius:20px;color:var(--muted)
+}
+.kanban-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px;margin-bottom:8px;
+  cursor:pointer;transition:box-shadow .15s,border-color .15s;
+}
+.kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);border-color:var(--border2)}
+.kc-name{font-size:.84rem;font-weight:700;margin-bottom:3px}
+.kc-company{font-size:.73rem;color:var(--muted)}
+.kc-service{font-size:.72rem;color:var(--accent2);margin-top:6px;font-weight:600}
+.kc-date{font-size:.68rem;color:var(--muted);margin-top:4px}
+
+/* ── SLIDE-IN DETAIL PANEL ── */
+.detail-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:400;
+}
+.detail-overlay.open{display:block}
+.detail-panel{
+  position:fixed;right:0;top:0;bottom:0;width:480px;max-width:95vw;
+  background:var(--surface);box-shadow:-8px 0 40px rgba(0,0,0,.12);
+  z-index:401;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .3s var(--ease);
+}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--border);
+}
+.detail-header h3{font-size:1rem;font-weight:700}
+.detail-close{background:var(--bg);border:1px solid var(--border);cursor:pointer;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:.9rem;color:var(--ink2)}
+.detail-body{flex:1;overflow-y:auto;padding:22px}
+.detail-section{margin-bottom:22px}
+.detail-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.detail-field{margin-bottom:12px}
+.detail-label{font-size:.73rem;font-weight:600;color:var(--ink2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.detail-val{font-size:.88rem;color:var(--ink)}
+.detail-input{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 11px;font-size:.86rem;
+  font-family:'Outfit',sans-serif;color:var(--ink);outline:none;transition:border-color .2s;
+}
+.detail-input:focus{border-color:var(--accent)}
+.detail-select{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 11px;font-size:.86rem;
+  font-family:'Outfit',sans-serif;color:var(--ink);cursor:pointer;outline:none;
+}
+.detail-textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 11px;font-size:.86rem;
+  font-family:'Outfit',sans-serif;color:var(--ink);resize:vertical;min-height:90px;outline:none;
+}
+.detail-textarea:focus{border-color:var(--accent)}
+.detail-footer{
+  padding:16px 22px;border-top:1px solid var(--border);
+  display:flex;gap:8px;
+}
+.btn-save{flex:1;background:#16a34a;color:#fff;border:none;padding:10px;border-radius:var(--r-sm);font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s}
+.btn-save:hover{background:#15803d}
+.btn-del-full{background:var(--surface);color:var(--danger);border:1px solid var(--danger);padding:10px 16px;border-radius:var(--r-sm);font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-del-full:hover{background:#fef2f2}
+
+/* ── ADD LEAD MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--surface);border-radius:14px;padding:32px;
+  width:500px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.2);position:relative;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--bg);border:1px solid var(--border);cursor:pointer;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;color:var(--ink2)}
+.modal-close:hover{background:var(--border)}
+.modal-title{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:22px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-full{grid-column:span 2}
+.btn-submit{width:100%;background:#16a34a;color:#fff;border:none;padding:12px;border-radius:var(--r-sm);font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:8px;transition:background .2s}
+.btn-submit:hover{background:#15803d}
+.form-msg{font-size:.8rem;margin-top:8px;display:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .crm-toolbar{flex-direction:column;align-items:stretch}
+  .search-wrap{max-width:100%}
+  .detail-panel{width:100%}
+  .kanban{flex-direction:column}
+  .kanban-col{min-width:unset}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="login-mark">A</div>
+      <div>
+        <div class="login-title">Acceio CRM</div>
+      </div>
+    </div>
+    <div class="login-sub">Sign in with your admin credentials to access the leads dashboard.</div>
+    <div class="field">
+      <label>Username</label>
+      <input id="lUser" type="text" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input id="lPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr">Invalid credentials. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══ CRM PAGE ══ -->
+<div id="crmPage" style="display:none;flex-direction:column;min-height:100vh">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-mark">A</div>
+      Acceio CRM
+    </div>
+    <div class="topbar-title">Leads Dashboard</div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="topbar-btn primary" onclick="openAddModal()">+ Add Lead</button>
+      <button class="topbar-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="crm-body">
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="stat-val" id="sTotal">—</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-card"><div class="stat-val" id="sNew">—</div><div class="stat-lbl">New Leads</div></div>
+      <div class="stat-card"><div class="stat-val" id="sWeek">—</div><div class="stat-lbl">This Week</div></div>
+      <div class="stat-card"><div class="stat-val" id="sMonth">—</div><div class="stat-lbl">This Month</div></div>
+      <div class="stat-card"><div class="stat-val" id="sWon">—</div><div class="stat-lbl">Deals Won</div></div>
+      <div class="stat-card"><div class="stat-val" id="sConv">—</div><div class="stat-lbl">Conversion %</div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="crm-toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search name, email, company…" oninput="filterLeads()"/>
+      </div>
+      <select class="filter-select" id="pipelineFilter" onchange="filterLeads()">
+        <option value="">All Pipelines</option>
+        <option>Inbound</option>
+        <option>Outbound</option>
+        <option>Referral</option>
+      </select>
+      <select class="filter-select" id="serviceFilter" onchange="filterLeads()">
+        <option value="">All Services</option>
+        <option>Social Media Marketing</option>
+        <option>Brand Management</option>
+        <option>Lead Generation</option>
+        <option>Email Marketing</option>
+        <option>Full-service package</option>
+        <option>AI Tools (Dashboard / Radar)</option>
+      </select>
+      <div class="status-tabs">
+        <button class="status-tab active" onclick="setStatusFilter('',this)">All</button>
+        <button class="status-tab" onclick="setStatusFilter('new',this)">New</button>
+        <button class="status-tab" onclick="setStatusFilter('contacted',this)">Contacted</button>
+        <button class="status-tab" onclick="setStatusFilter('qualified',this)">Qualified</button>
+        <button class="status-tab" onclick="setStatusFilter('proposal',this)">Proposal</button>
+        <button class="status-tab" onclick="setStatusFilter('won',this)">Won</button>
+        <button class="status-tab" onclick="setStatusFilter('lost',this)">Lost</button>
+      </div>
+      <button class="topbar-btn" id="viewToggleBtn" onclick="toggleView()">📋 Pipeline View</button>
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView">
+      <div class="leads-table-wrap">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortBy('name')">Name / Company</th>
+              <th>Contact</th>
+              <th>Service Interest</th>
+              <th class="sortable" onclick="sortBy('status')">Status</th>
+              <th>Pipeline</th>
+              <th class="sortable" onclick="sortBy('created_at')">Date</th>
+              <th>Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody">
+            <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-msg">Loading leads…</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align:right;margin-top:10px;font-size:.78rem;color:var(--muted)" id="countLabel"></div>
+    </div>
+
+    <!-- Pipeline Kanban View -->
+    <div id="pipelineView" style="display:none">
+      <div class="kanban" id="kanbanBoard"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ DETAIL SLIDE PANEL ══ -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <h3 id="detailTitle">Lead Details</h3>
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body">
+    <!-- Contact Info -->
+    <div class="detail-section">
+      <div class="detail-section-title">Contact Information</div>
+      <div class="form-row">
+        <div class="detail-field">
+          <div class="detail-label">Full Name</div>
+          <input class="detail-input" id="dName" type="text"/>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Email</div>
+          <input class="detail-input" id="dEmail" type="email"/>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Phone</div>
+          <input class="detail-input" id="dPhone" type="text" placeholder="—"/>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Company</div>
+          <input class="detail-input" id="dCompany" type="text" placeholder="—"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lead Info -->
+    <div class="detail-section">
+      <div class="detail-section-title">Lead Details</div>
+      <div class="form-row">
+        <div class="detail-field">
+          <div class="detail-label">Status</div>
+          <select class="detail-select" id="dStatus">
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="proposal">Proposal Sent</option>
+            <option value="won">Won ✓</option>
+            <option value="lost">Lost ✗</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Pipeline</div>
+          <select class="detail-select" id="dPipeline">
+            <option>Inbound</option>
+            <option>Outbound</option>
+            <option>Referral</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Service Interest</div>
+          <input class="detail-input" id="dService" type="text" placeholder="—"/>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Source</div>
+          <input class="detail-input" id="dSource" type="text" placeholder="—"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="detail-section">
+      <div class="detail-section-title">Message from Lead</div>
+      <div class="detail-field">
+        <textarea class="detail-textarea" id="dMessage" readonly style="background:#f9fafb;color:var(--ink2)"></textarea>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="detail-section">
+      <div class="detail-section-title">Internal Notes</div>
+      <div class="detail-field">
+        <textarea class="detail-textarea" id="dNotes" placeholder="Add notes about this lead — calls made, next steps, deal size…"></textarea>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="detail-section">
+      <div class="detail-section-title">Timeline</div>
+      <div style="font-size:.8rem;color:var(--muted);line-height:1.8">
+        <div>Created: <span id="dCreated" style="color:var(--ink)">—</span></div>
+        <div>Updated: <span id="dUpdated" style="color:var(--ink)">—</span></div>
+        <div>Lead ID: <span id="dId" style="color:var(--ink)">—</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail-footer">
+    <button class="btn-save" onclick="saveLead()">💾 Save Changes</button>
+    <button class="btn-del-full" onclick="deleteLead()">🗑 Delete</button>
+  </div>
+</div>
+
+<!-- ══ ADD LEAD MODAL ══ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAddModal()">✕</button>
+    <div class="modal-title">Add New Lead</div>
+    <div class="modal-sub">Manually add a lead to the CRM. Leads from your website are captured automatically.</div>
+    <div class="form-row">
+      <div class="field">
+        <label>Full Name *</label>
+        <input class="detail-input" id="aName" type="text" placeholder="Raj Sharma"/>
+      </div>
+      <div class="field">
+        <label>Email *</label>
+        <input class="detail-input" id="aEmail" type="email" placeholder="raj@company.com"/>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input class="detail-input" id="aPhone" type="text" placeholder="+91 9999..."/>
+      </div>
+      <div class="field">
+        <label>Company</label>
+        <input class="detail-input" id="aCompany" type="text" placeholder="Company name"/>
+      </div>
+      <div class="field">
+        <label>Service Interest</label>
+        <select class="detail-select" id="aService">
+          <option value="">Select…</option>
+          <option>Social Media Marketing</option>
+          <option>Brand Management</option>
+          <option>Lead Generation</option>
+          <option>Email Marketing</option>
+          <option>Full-service package</option>
+          <option>AI Tools (Dashboard / Radar)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Pipeline</label>
+        <select class="detail-select" id="aPipeline">
+          <option>Inbound</option>
+          <option>Outbound</option>
+          <option>Referral</option>
+        </select>
+      </div>
+      <div class="field field-full">
+        <label>Source</label>
+        <input class="detail-input" id="aSource" type="text" placeholder="e.g. LinkedIn, Referral from X, Cold email…"/>
+      </div>
+      <div class="field field-full">
+        <label>Message / Notes</label>
+        <textarea class="detail-textarea" id="aMessage" placeholder="What did they reach out about?"></textarea>
+      </div>
+    </div>
+    <div id="addMsg" class="form-msg"></div>
+    <button class="btn-submit" onclick="submitAddLead()">Add Lead →</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://acceio-api.onrender.com';
+let token = localStorage.getItem('acceio_crm_token');
+let allLeads = [];
+let currentLead = null;
+let sortField = 'created_at';
+let sortAsc = false;
+let activeStatus = '';
+let viewMode = 'table'; // 'table' | 'pipeline'
+
+// ── Init ──
+if (token) showCRM();
+document.getElementById('lPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── Auth ──
+async function doLogin() {
+  const u = document.getElementById('lUser').value.trim();
+  const p = document.getElementById('lPass').value;
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  try {
+    const res  = await fetch(`${API}/api/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u,password:p}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+    if (data.user.username !== 'admin' && data.user.plan !== 'Scale') throw new Error('Admin access required');
+    token = data.token;
+    localStorage.setItem('acceio_crm_token', token);
+    showCRM();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('acceio_crm_token');
+  token = null;
+  document.getElementById('crmPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+function showCRM() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('crmPage').style.display = 'flex';
+  loadStats();
+  loadLeads();
+}
+
+// ── Load Stats ──
+async function loadStats() {
+  try {
+    const res  = await fetch(`${API}/api/admin/leads/stats/summary`, { headers:{'Authorization':'Bearer '+token} });
+    if (!res.ok) return;
+    const s = await res.json();
+    document.getElementById('sTotal').textContent = s.total;
+    document.getElementById('sNew').textContent   = s.new;
+    document.getElementById('sWeek').textContent  = s.thisWeek;
+    document.getElementById('sMonth').textContent = s.thisMonth;
+    document.getElementById('sWon').textContent   = s.won;
+    document.getElementById('sConv').textContent  = s.conversion + '%';
+  } catch(_) {}
+}
+
+// ── Load & Render Leads ──
+async function loadLeads() {
+  try {
+    const res = await fetch(`${API}/api/admin/leads`, { headers:{'Authorization':'Bearer '+token} });
+    if (!res.ok) { if (res.status===401||res.status===403) doLogout(); return; }
+    allLeads = await res.json();
+    renderLeads();
+  } catch(_) {
+    document.getElementById('leadsBody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-msg">Could not load leads</div><div class="empty-sub">Check your connection and try again.</div></div></td></tr>`;
+  }
+}
+
+function getFilteredLeads() {
+  const q        = document.getElementById('searchInput').value.toLowerCase();
+  const pipeline = document.getElementById('pipelineFilter').value;
+  const service  = document.getElementById('serviceFilter').value;
+  return allLeads
+    .filter(l => {
+      if (activeStatus && l.status !== activeStatus) return false;
+      if (pipeline && l.pipeline !== pipeline) return false;
+      if (service && l.service !== service) return false;
+      if (q && !(l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q) || (l.company||'').toLowerCase().includes(q))) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      let va = a[sortField] || '', vb = b[sortField] || '';
+      return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+}
+
+function renderLeads() {
+  if (viewMode === 'pipeline') { renderKanban(); return; }
+  const leads = getFilteredLeads();
+  const tbody = document.getElementById('leadsBody');
+  document.getElementById('countLabel').textContent = `${leads.length} lead${leads.length!==1?'s':''} shown`;
+
+  if (!leads.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-msg">No leads found</div><div class="empty-sub">Try adjusting your filters or add a lead manually.</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = leads.map(l => {
+    const d = new Date(l.created_at);
+    const dateStr = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+    const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    return `<tr onclick="openDetail(${l.id})">
+      <td>
+        <div class="lead-name">${esc(l.name)}</div>
+        ${l.company ? `<div class="lead-company">🏢 ${esc(l.company)}</div>` : ''}
+      </td>
+      <td>
+        <div class="lead-email"><a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()" style="color:var(--accent2)">${esc(l.email)}</a></div>
+        ${l.phone ? `<div class="lead-company">📞 ${esc(l.phone)}</div>` : ''}
+      </td>
+      <td><span style="font-size:.82rem;color:var(--ink2)">${esc(l.service||'—')}</span></td>
+      <td><span class="status-badge s-${l.status}">${statusLabel(l.status)}</span></td>
+      <td><span class="lead-source">${esc(l.pipeline||'Inbound')}</span></td>
+      <td>
+        <div class="lead-date">${dateStr}</div>
+        <div class="lead-date">${timeStr}</div>
+      </td>
+      <td><span class="lead-source">${esc(l.source||'Direct')}</span></td>
+      <td onclick="event.stopPropagation()">
+        <div class="action-btns">
+          <button class="act-btn edit" onclick="openDetail(${l.id})">Edit</button>
+          <button class="act-btn" onclick="quickStatus(${l.id},'won')">✓ Won</button>
+          <button class="act-btn del" onclick="confirmDelete(${l.id})">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderKanban() {
+  const STAGES = ['new','contacted','qualified','proposal','won','lost'];
+  const STAGE_LABELS = {new:'New',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won ✓',lost:'Lost ✗'};
+  const STAGE_COLORS = {new:'#16a34a',contacted:'#1d4ed8',qualified:'#d97706',proposal:'#7c3aed',won:'#059669',lost:'#dc2626'};
+  const leads = getFilteredLeads();
+  const grouped = {};
+  STAGES.forEach(s => grouped[s] = []);
+  leads.forEach(l => { if (grouped[l.status]) grouped[l.status].push(l); else grouped['new'].push(l); });
+  document.getElementById('kanbanBoard').innerHTML = STAGES.map(s => `
+    <div class="kanban-col" style="border-top:3px solid ${STAGE_COLORS[s]}">
+      <div class="kanban-header">
+        <div class="kanban-title" style="color:${STAGE_COLORS[s]}">${STAGE_LABELS[s]}</div>
+        <div class="kanban-count">${grouped[s].length}</div>
+      </div>
+      ${grouped[s].map(l => `
+        <div class="kanban-card" onclick="openDetail(${l.id})">
+          <div class="kc-name">${esc(l.name)}</div>
+          ${l.company?`<div class="kc-company">${esc(l.company)}</div>`:''}
+          ${l.service?`<div class="kc-service">${esc(l.service)}</div>`:''}
+          <div class="kc-date">${new Date(l.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+        </div>`).join('')}
+      ${!grouped[s].length ? `<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:14px">Empty</div>` : ''}
+    </div>`).join('');
+}
+
+// ── Filters & Sort ──
+function filterLeads() { renderLeads(); }
+function setStatusFilter(status, btn) {
+  activeStatus = status;
+  document.querySelectorAll('.status-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeads();
+}
+function sortBy(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = false; }
+  renderLeads();
+}
+function toggleView() {
+  viewMode = viewMode === 'table' ? 'pipeline' : 'table';
+  document.getElementById('tableView').style.display    = viewMode === 'table'    ? 'block' : 'none';
+  document.getElementById('pipelineView').style.display = viewMode === 'pipeline' ? 'block' : 'none';
+  document.getElementById('viewToggleBtn').textContent  = viewMode === 'table'    ? '📋 Pipeline View' : '📊 Table View';
+  renderLeads();
+}
+
+// ── Detail Panel ──
+function openDetail(id) {
+  currentLead = allLeads.find(l => l.id === id);
+  if (!currentLead) return;
+  document.getElementById('detailTitle').textContent = currentLead.name;
+  document.getElementById('dName').value     = currentLead.name     || '';
+  document.getElementById('dEmail').value    = currentLead.email    || '';
+  document.getElementById('dPhone').value    = currentLead.phone    || '';
+  document.getElementById('dCompany').value  = currentLead.company  || '';
+  document.getElementById('dStatus').value   = currentLead.status   || 'new';
+  document.getElementById('dPipeline').value = currentLead.pipeline || 'Inbound';
+  document.getElementById('dService').value  = currentLead.service  || '';
+  document.getElementById('dSource').value   = currentLead.source   || '';
+  document.getElementById('dMessage').value  = currentLead.message  || '';
+  document.getElementById('dNotes').value    = currentLead.notes    || '';
+  document.getElementById('dCreated').textContent = new Date(currentLead.created_at).toLocaleString('en-IN');
+  document.getElementById('dUpdated').textContent = new Date(currentLead.updated_at||currentLead.created_at).toLocaleString('en-IN');
+  document.getElementById('dId').textContent = '#' + currentLead.id;
+  document.getElementById('detailOverlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+  currentLead = null;
+}
+
+async function saveLead() {
+  if (!currentLead) return;
+  const updates = {
+    name:       document.getElementById('dName').value,
+    email:      document.getElementById('dEmail').value,
+    phone:      document.getElementById('dPhone').value,
+    company:    document.getElementById('dCompany').value,
+    status:     document.getElementById('dStatus').value,
+    pipeline:   document.getElementById('dPipeline').value,
+    service:    document.getElementById('dService').value,
+    source:     document.getElementById('dSource').value,
+    notes:      document.getElementById('dNotes').value,
+  };
+  try {
+    const res = await fetch(`${API}/api/admin/leads/${currentLead.id}`, {
+      method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Save failed');
+    closeDetail();
+    loadStats();
+    loadLeads();
+  } catch(e) { alert('Save failed: ' + e.message); }
+}
+
+async function deleteLead() {
+  if (!currentLead) return;
+  if (!confirm(`Delete lead for ${currentLead.name}? This cannot be undone.`)) return;
+  try {
+    await fetch(`${API}/api/admin/leads/${currentLead.id}`, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    closeDetail();
+    loadStats();
+    loadLeads();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+async function confirmDelete(id) {
+  const lead = allLeads.find(l => l.id === id);
+  if (!lead || !confirm(`Delete lead for ${lead.name}?`)) return;
+  try {
+    await fetch(`${API}/api/admin/leads/${id}`, {
+      method:'DELETE', headers:{'Authorization':'Bearer '+token}
+    });
+    loadStats();
+    loadLeads();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+async function quickStatus(id, status) {
+  try {
+    await fetch(`${API}/api/admin/leads/${id}`, {
+      method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ status })
+    });
+    loadStats();
+    loadLeads();
+  } catch(_) {}
+}
+
+// ── Add Lead Modal ──
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+document.getElementById('addModal').addEventListener('click', e => { if (e.target === document.getElementById('addModal')) closeAddModal(); });
+
+async function submitAddLead() {
+  const name  = document.getElementById('aName').value.trim();
+  const email = document.getElementById('aEmail').value.trim();
+  const msgEl = document.getElementById('addMsg');
+  msgEl.style.display = 'none';
+  if (!name || !email) { msgEl.textContent='Name and email are required.'; msgEl.style.color='var(--danger)'; msgEl.style.display='block'; return; }
+  try {
+    const res = await fetch(`${API}/api/leads`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name, email,
+        phone:    document.getElementById('aPhone').value.trim(),
+        company:  document.getElementById('aCompany').value.trim(),
+        service:  document.getElementById('aService').value,
+        pipeline: document.getElementById('aPipeline').value,
+        source:   document.getElementById('aSource').value.trim() || 'Manual Entry',
+        message:  document.getElementById('aMessage').value.trim(),
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    msgEl.textContent = '✓ Lead added successfully!';
+    msgEl.style.color = 'var(--accent)';
+    msgEl.style.display = 'block';
+    ['aName','aEmail','aPhone','aCompany','aMessage','aSource'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('aService').value = '';
+    setTimeout(closeAddModal, 1500);
+    loadStats();
+    loadLeads();
+  } catch(e) { msgEl.textContent='Error: '+e.message; msgEl.style.color='var(--danger)'; msgEl.style.display='block'; }
+}
+
+// ── CSV Export ──
+function exportCSV() {
+  const leads = getFilteredLeads();
+  const headers = ['ID','Name','Email','Phone','Company','Service','Status','Pipeline','Source','Message','Notes','Created'];
+  const rows = leads.map(l => [
+    l.id, l.name, l.email, l.phone||'', l.company||'', l.service||'',
+    l.status, l.pipeline||'', l.source||'', (l.message||'').replace(/[\n\r,]/g,' '),
+    (l.notes||'').replace(/[\n\r,]/g,' '),
+    new Date(l.created_at).toLocaleString('en-IN')
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `acceio-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Helpers ──
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function statusLabel(s) {
+  const labels = {new:'New',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won',lost:'Lost'};
+  return labels[s] || s;
+}
+</script>
+</body>
+</html>
