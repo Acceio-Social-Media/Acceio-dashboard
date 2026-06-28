@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Acceio Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060810;--surface:#0d1117;--card:#111720;--border:rgba(255,255,255,.08);--accent:#00e5c3;--accent2:#6c63ff;--text:#edf2f7;--text2:#a0aec0;--muted:#4a5568;--danger:#fc8181;--success:#48bb78;--warn:#f6ad55;--r:12px;--r-sm:8px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.wrap{max-width:980px;margin:0 auto;padding:40px 20px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;}
+.mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:grid;place-items:center;font-size:.8rem;font-weight:900;color:#000;}
+
+/* Login */
+#loginPanel{max-width:400px;margin:80px auto;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;}
+.card h2{font-size:1.1rem;margin-bottom:20px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px;}
+.field input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;color:var(--text);font-size:.88rem;outline:none;}
+.field input:focus{border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r-sm);border:none;font-weight:700;font-size:.83rem;cursor:pointer;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,229,195,.2);}
+.btn-danger{background:rgba(252,129,129,.1);color:var(--danger);border:1px solid rgba(252,129,129,.2);}
+.btn-danger:hover{background:rgba(252,129,129,.2);}
+.btn-warn{background:rgba(246,173,85,.1);color:var(--warn);border:1px solid rgba(246,173,85,.2);}
+.btn-warn:hover{background:rgba(246,173,85,.2);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:var(--r-sm);cursor:pointer;font-size:.82rem;font-weight:600;}
+.btn-sm{padding:6px 12px;font-size:.75rem;}
+.err{color:var(--danger);font-size:.8rem;margin-top:8px;}
+
+/* Dashboard */
+#adminPanel{display:none;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;}
+.stat-val{font-size:1.8rem;font-weight:800;letter-spacing:-.04em;}
+.stat-lbl{font-size:.72rem;color:var(--text2);margin-top:2px;}
+
+/* CLIENT FOLDER STRUCTURE */
+.client-dir{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;transition:border-color .2s;}
+.client-dir:hover{border-color:rgba(255,255,255,.12);}
+.client-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;cursor:pointer;
+  transition:background .15s;
+  user-select:none;
+  gap:12px;
+}
+.client-header:hover{background:rgba(255,255,255,.025);}
+.client-name-row{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.client-chevron{font-size:.7rem;color:var(--muted);transition:transform .2s;display:inline-block;flex-shrink:0;}
+.client-chevron.open{transform:rotate(90deg);}
+.client-folder-icon{font-size:1rem;flex-shrink:0;}
+.client-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.client-meta{font-size:.7rem;color:var(--text2);margin-top:1px;}
+.client-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.client-users-panel{display:none;border-top:1px solid var(--border);}
+.client-users-panel.open{display:block;}
+.client-users-inner{padding:8px 14px 14px;}
+
+/* USER TABLE */
+.users-table{width:100%;border-collapse:collapse;}
+.users-table th{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--border);}
+.users-table td{padding:10px;font-size:.8rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.plan-chip{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:20px;}
+.plan-Scale{background:rgba(0,229,195,.12);color:var(--accent);}
+.plan-Growth{background:rgba(108,99,255,.12);color:var(--accent2);}
+.plan-Starter{background:rgba(160,174,192,.1);color:var(--text2);}
+.plan-Trial{background:rgba(246,173,85,.12);color:var(--warn);}
+.active-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
+.dot-on{background:var(--success);}
+.dot-off{background:var(--danger);}
+
+/* No clients */
+.no-clients{text-align:center;padding:56px 20px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);}
+.no-clients-icon{font-size:2.5rem;margin-bottom:10px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;place-items:center;}
+.modal-overlay.show{display:grid;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;width:460px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:20px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+select.field-sel{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;color:var(--text);font-size:.88rem;outline:none;}
+
+/* ── Tab bar ── */
+.tabbar{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);font-family:inherit;font-weight:700;font-size:.86rem;padding:10px 16px;margin-bottom:-1px;cursor:pointer;transition:color .15s,border-color .15s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tabpane{display:none;}
+.tabpane.active{display:block;}
+
+/* ── Lead Finder ── */
+.lf-note{display:flex;gap:10px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:13px 15px;margin-bottom:20px;font-size:.8rem;color:var(--text2);line-height:1.6;}
+.lf-note b{color:var(--text);}
+.lf-demo-badge{display:inline-block;background:rgba(246,173,85,.12);border:1px solid rgba(246,173,85,.4);color:var(--warn);font-weight:700;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+.lf-filters{display:grid;grid-template-columns:1.5fr 1.4fr .9fr .9fr auto;gap:12px;align-items:end;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:18px;}
+.lf-filters .field{margin-bottom:0;}
+.lf-filters select,.lf-filters input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;}
+.lf-filters select:focus,.lf-filters input:focus{border-color:var(--accent);}
+.lf-rtools{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.lf-count{font-size:.82rem;color:var(--text2);}
+.lf-count b{color:var(--accent);}
+.lf-table-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface);overflow-x:auto;}
+.lf-table{width:100%;border-collapse:collapse;min-width:1020px;}
+/* ── SEO Audit ── */
+.sa-bar{display:flex;gap:10px;margin:0 0 20px;max-width:620px}
+.sa-bar input{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-size:.9rem;outline:none}
+.sa-bar input:focus{border-color:var(--accent)}
+.sa-top{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px}
+.sa-ring{width:120px;height:120px;border-radius:50%;display:grid;place-items:center}
+.sa-ring .inner{width:92px;height:92px;background:var(--surface);border-radius:50%;display:grid;place-items:center;text-align:center}
+.sa-ring .num{font-size:1.8rem;font-weight:800;line-height:1}
+.sa-ring .lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.sa-cats{display:flex;flex-direction:column;gap:11px}
+.sa-cat{display:grid;grid-template-columns:130px 1fr 42px;gap:12px;align-items:center}
+.sa-cat .cn{font-size:.8rem;font-weight:600}
+.sa-cat .bar{height:8px;background:var(--card2);border-radius:8px;overflow:hidden}
+.sa-cat .fill{height:100%;border-radius:8px}
+.sa-cat .pct{font-size:.8rem;font-weight:700;text-align:right}
+.sa-summary{display:flex;gap:8px;margin:8px 0 14px;flex-wrap:wrap}
+.sa-pill{font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid}
+.sa-pill.p{color:var(--success);border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.1)}
+.sa-pill.w{color:var(--warn);border-color:rgba(217,119,6,.35);background:rgba(217,119,6,.1)}
+.sa-pill.f{color:var(--danger);border-color:rgba(220,38,38,.35);background:rgba(220,38,38,.1)}
+.sa-sect-title{font-size:.95rem;font-weight:800;margin:18px 0 10px}
+.sa-checks{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.sa-check{display:grid;grid-template-columns:12px 150px 1fr;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);align-items:start}
+.sa-check:last-child{border-bottom:none}
+.sa-dot{width:10px;height:10px;border-radius:50%;margin-top:4px}
+.sa-dot.pass{background:var(--success)} .sa-dot.warn{background:var(--warn)} .sa-dot.fail{background:var(--danger)}
+.sa-cname{font-size:.82rem;font-weight:700}
+.sa-ccat{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:2px}
+.sa-cdetail{font-size:.8rem;color:var(--text2);line-height:1.5}
+.sa-more-btn{margin:16px 0;background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px 22px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit}
+.sa-empty{padding:40px;text-align:center;color:var(--muted)}
+.sa-spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:lf2spin .7s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes lf2spin{to{transform:rotate(360deg)}}
+@media(max-width:680px){.sa-top{grid-template-columns:1fr}.sa-check{grid-template-columns:12px 1fr}.sa-cat{grid-template-columns:110px 1fr 40px}}
+/* ── AcceioSpider crawler ── */
+.cr-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.cr-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.cr-stat .n{font-size:1.7rem;font-weight:800;line-height:1}
+.cr-stat .l{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:5px}
+.cr-sect{font-size:.95rem;font-weight:800;margin:20px 0 12px}
+.cr-tree{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow-x:auto}
+.cr-node{position:relative}
+.cr-node .cr-kids{margin-left:22px;padding-left:16px;border-left:1px dashed var(--border2)}
+.cr-row{display:inline-flex;align-items:center;gap:9px;padding:6px 11px;margin:4px 0;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:.8rem}
+.cr-row.broken{border-color:var(--danger);background:rgba(220,38,38,.07)}
+.cr-row .cr-x{color:var(--danger);font-weight:800}
+.cr-row .cr-ok{color:var(--success);font-weight:800}
+.cr-row .cr-warn{color:var(--warn);font-weight:800}
+.cr-path{font-weight:700;color:var(--text)}
+.cr-meta{font-size:.68rem;color:var(--muted)}
+.cr-status{font-size:.64rem;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid var(--border2);color:var(--text2)}
+.cr-status.bad{color:var(--danger);border-color:rgba(220,38,38,.4)}
+.cr-broken-list{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.cr-bl{display:grid;grid-template-columns:1fr auto;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:.8rem}
+.cr-bl:last-child{border-bottom:none}
+.cr-bl .to{color:var(--danger);font-weight:600;word-break:break-all}
+.cr-bl .from{color:var(--muted);font-size:.72rem}
+.cr-report{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.cr-page{border-bottom:1px solid var(--border);padding:14px 16px}
+.cr-page:last-child{border-bottom:none}
+.cr-page .ph{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:8px}
+.cr-page .pu{font-weight:700;font-size:.84rem;word-break:break-all}
+.cr-issue{display:grid;grid-template-columns:14px 1fr;gap:9px;padding:7px 0;border-top:1px dashed var(--border);font-size:.8rem}
+.cr-issue .dot{width:9px;height:9px;border-radius:50%;margin-top:4px}
+.cr-issue .dot.fail{background:var(--danger)} .cr-issue .dot.warn{background:var(--warn)}
+.cr-issue .msg{font-weight:600}
+.cr-issue .fix{color:var(--text2);margin-top:2px}
+.cr-issue .fixlbl{color:var(--accent);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;margin-right:5px}
+.cr-clean{color:var(--success);font-size:.78rem;font-weight:600}
+.cr-issue .dot.pass{background:var(--success)}
+.cr-cat{color:var(--muted);font-weight:500;font-size:.66rem}
+.cr-print-head{display:none}
+@media(max-width:680px){.cr-summary{grid-template-columns:1fr 1fr}}
+@media print{
+  @page { margin:14mm; }
+  body{background:#fff !important;color:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body *{visibility:hidden;}
+  #crPrintArea, #crPrintArea *{visibility:visible;}
+  #crPrintArea{position:absolute;left:0;top:0;width:100%;}
+  .crmprint-hide, .tabs, .topbar, .sa-bar, button{display:none !important;}
+  .cr-print-head{display:block !important;margin-bottom:16px;border-bottom:2px solid #111;padding-bottom:10px;}
+  .cr-print-head *{color:#111 !important;}
+  .cr-stat,.cr-tree,.cr-broken-list,.cr-report,.cr-page,.cr-row,.sa-top,.sa-checks{background:#fff !important;border-color:#ccc !important;color:#111 !important;break-inside:avoid;}
+  .cr-path,.pu,.msg,.cr-stat .n,.sa-ring .num,.cn,.pct{color:#111 !important;}
+  .fix{color:#444 !important;}
+  .cr-meta,.cr-cat,.cr-stat .l,.from,.sa-ring .lbl{color:#666 !important;}
+  .cr-row.broken{background:#fde8e8 !important;border-color:#dc2626 !important;}
+  .cr-x,.to,.cr-status.bad{color:#dc2626 !important;}
+  .cr-ok{color:#16a34a !important;} .cr-warn{color:#d97706 !important;}
+  .cr-sect{color:#111 !important;break-after:avoid;}
+  .sa-pill{color:#111 !important;border-color:#ccc !important;}
+}
+.lf-table th{background:var(--card);text-align:left;font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:12px 14px;border-bottom:1px solid var(--border);}
+.lf-table td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:.82rem;}
+.lf-table tr:last-child td{border-bottom:none;}
+.lf-biz{font-weight:700;font-size:.88rem;}
+.lf-cat{display:inline-block;margin-top:4px;font-size:.62rem;font-weight:700;color:var(--accent);background:rgba(0,229,195,.08);border:1px solid rgba(0,229,195,.2);padding:2px 8px;border-radius:20px;}
+.lf-web a{color:var(--accent2);text-decoration:none;}
+.lf-web a:hover{text-decoration:underline;}
+.lf-soc{display:flex;gap:5px;flex-wrap:wrap;}
+.lf-chip{font-size:.66rem;font-weight:700;padding:3px 8px;border-radius:6px;text-decoration:none;border:1px solid var(--border);color:var(--text2);}
+.lf-chip:hover{border-color:var(--accent);color:var(--accent);}
+.lf-none{color:var(--muted);font-style:italic;font-size:.72rem;}
+.lf-obs{font-size:.78rem;color:var(--text2);line-height:1.5;margin-bottom:8px;}
+.lf-emailbtn{background:rgba(0,229,195,.1);color:var(--accent);border:1px solid rgba(0,229,195,.25);border-radius:6px;padding:5px 10px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.lf-emailbtn:hover{background:rgba(0,229,195,.18);}
+.lf-rating{font-weight:700;}
+.lf-rating .st{color:var(--accent);}
+.lf-rating small{color:var(--muted);font-weight:500;}
+.lf-empty{padding:48px 20px;text-align:center;color:var(--muted);}
+.lf-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:lfspin .7s linear infinite;vertical-align:-2px;margin-right:6px;}
+@keyframes lfspin{to{transform:rotate(360deg)}}
+@media(max-width:760px){.lf-filters{grid-template-columns:1fr 1fr;}.lf-filters .lf-btnwrap{grid-column:1/-1;}.lf-filters .lf-btnwrap .btn{width:100%;}}
+</style>
+<script>
+// Load EmailJS for one-click outreach
+(function(){ var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'; s.onload=function(){ try{ emailjs.init('vvL1rtD3HeuGA0B0E'); }catch(e){} }; document.head.appendChild(s); })();
+</script>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginPanel">
+    <div style="text-align:center;margin-bottom:28px">
+      <div class="logo" style="justify-content:center;margin-bottom:6px"><div class="mark">A</div>Acceio Admin</div>
+      <div style="font-size:.82rem;color:var(--text2)">Manage customer accounts</div>
+    </div>
+    <div class="card">
+      <h2>Sign In</h2>
+      <div class="field"><label>Username</label><input id="aUser" type="text" placeholder="admin" autocomplete="username"/></div>
+      <div class="field"><label>Password</label><input id="aPass" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button class="btn btn-primary" onclick="adminLogin()">Sign In →</button>
+      <div class="err" id="aErr"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel">
+    <div class="header">
+      <div class="logo"><div class="mark">A</div>Acceio Admin</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal(null)">+ Add Customer</button>
+        <button class="btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tabbar">
+      <button class="tab-btn active" id="tabbtn-customers" onclick="switchTab('customers')">👥 Customers</button>
+      <button class="tab-btn" id="tabbtn-leadgen" onclick="switchTab('leadgen')">🎯 Lead Generation</button>
+      <button class="tab-btn" id="tabbtn-seoaudit" onclick="switchTab('seoaudit')">🔍 SEO Audit</button>
+      <button class="tab-btn" id="tabbtn-crawler" onclick="switchTab('crawler')">🕷 Site Crawler</button>
+    </div>
+
+    <!-- ════ TAB: CUSTOMERS ════ -->
+    <div id="tab-customers" class="tabpane active">
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" id="statClients" style="color:var(--accent2)">—</div><div class="stat-lbl">Total Clients</div></div>
+      <div class="stat"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Users</div></div>
+      <div class="stat"><div class="stat-val" id="statActive" style="color:var(--success)">—</div><div class="stat-lbl">Active Users</div></div>
+      <div class="stat"><div class="stat-val" id="statScale" style="color:var(--accent)">—</div><div class="stat-lbl">Scale Plan</div></div>
+      <div class="stat" style="cursor:pointer" onclick="loadAnthropicBalance()" title="Click to refresh">
+        <div class="stat-val" id="statAnthropicBalance" style="color:var(--warn);font-size:1.2rem">—</div>
+        <div class="stat-lbl">🤖 Anthropic Est. Cost</div>
+        <div id="statAnthropicSub" style="font-size:.6rem;color:var(--muted);margin-top:2px">Click to load</div>
+      </div>
+      <div class="stat" style="cursor:pointer" onclick="loadPageSEOStats()" title="Click to refresh">
+        <div class="stat-val" id="statPageSEOToday" style="color:var(--accent2)">—</div>
+        <div class="stat-lbl">⚡ PageSEO Today</div>
+        <div id="statPageSEOSub" style="font-size:.6rem;color:var(--muted);margin-top:2px">Click to load</div>
+      </div>
+    </div>
+
+    <!-- Anthropic Balance Detail Panel (shown when clicked) -->
+    <div id="anthropicPanel" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px 20px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:.88rem;font-weight:700">🤖 Anthropic Account Usage</div>
+        <div style="display:flex;gap:8px">
+          <a href="https://console.anthropic.com/settings/billing" target="_blank" style="font-size:.72rem;color:var(--accent2);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:6px">Open Console ↗</a>
+          <button onclick="document.getElementById('anthropicPanel').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">✕</button>
+        </div>
+      </div>
+      <div id="anthropicDetail" style="font-size:.82rem;color:var(--text2);line-height:1.8"></div>
+    </div>
+
+    <!-- PageSEO Stats Panel -->
+    <div id="pageSEOPanel" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px 20px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:700">⚡ PageSEO Tool Usage</div>
+        <button onclick="document.getElementById('pageSEOPanel').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">✕</button>
+      </div>
+      <div id="pageSEOStats" style="font-size:.82rem;color:var(--text2)">Loading…</div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:.95rem;font-weight:700;">📂 Client Directories</div>
+      <button class="btn-ghost btn-sm" onclick="loadUsers()">↻ Refresh</button>
+    </div>
+
+    <div id="clientDirs"></div>
+    </div><!-- /tab-customers -->
+
+    <!-- ════ TAB: LEAD GENERATION ════ -->
+    <div id="tab-leadgen" class="tabpane">
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+        <div style="font-size:1.1rem;font-weight:800">Lead Finder</div>
+        <span id="lfDemoBadge" class="lf-demo-badge" style="display:none">Demo data</span>
+      </div>
+      <div style="font-size:.84rem;color:var(--text2);margin-bottom:16px">Find local businesses by industry &amp; location, with their website, phone and social pages. Export and run the websites through Hunter for emails.</div>
+
+      <div class="lf-note">
+        <span>ℹ️</span>
+        <div><b>Source:</b> results come from the <b>Google Places API</b> (name, address, phone, website, rating). Social handles are enriched by reading each business's own website — no scraping of Instagram, Facebook or LinkedIn.</div>
+      </div>
+
+      <div class="lf-filters">
+        <div class="field">
+          <label>Industry</label>
+          <select id="lfIndustry">
+            <option value="dental clinics">Dental / Medical Clinic</option>
+            <option value="gyms and fitness centers">Gym &amp; Fitness</option>
+            <option value="travel agencies">Travel Agency</option>
+            <option value="restaurants and cafes">Restaurant &amp; Café</option>
+            <option value="beauty salons and spas">Beauty Salon &amp; Spa</option>
+            <option value="real estate agents">Real Estate</option>
+            <option value="interior designers">Interior Design</option>
+            <option value="law firms">Law Firm</option>
+            <option value="accounting and CA firms">Accounting / CA Firm</option>
+            <option value="coaching and tuition centers">Coaching &amp; Education</option>
+            <option value="boutiques and apparel stores">Boutique &amp; Apparel</option>
+            <option value="jewellery stores">Jewellery Store</option>
+            <option value="photography studios">Photography Studio</option>
+            <option value="event planners">Event Planner</option>
+            <option value="veterinary and pet care">Pet Care &amp; Veterinary</option>
+            <option value="car dealerships">Automobile Dealer</option>
+            <option value="hotels and resorts">Hotel &amp; Resort</option>
+            <option value="yoga and wellness studios">Wellness &amp; Yoga</option>
+            <option value="furniture and decor stores">Furniture &amp; Décor</option>
+            <option value="IT and digital agencies">Digital / IT Services</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input id="lfLocation" type="text" value="Pune, India" placeholder="City or area"/>
+        </div>
+        <div class="field">
+          <label>Results</label>
+          <select id="lfLimit">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Has website</label>
+          <select id="lfHasSite">
+            <option value="any">Any</option>
+            <option value="yes">Must have</option>
+          </select>
+        </div>
+        <div class="field lf-btnwrap">
+          <button class="btn btn-primary" id="lfSearchBtn" onclick="runLeadSearch()">Search</button>
+        </div>
+      </div>
+
+      <div class="lf-rtools">
+        <div class="lf-count">Showing <b id="lfCnt">0</b> results <span id="lfCtx" style="color:var(--muted)"></span></div>
+        <button class="btn-ghost btn-sm" onclick="exportLeadsCSV()">⬇ Export CSV</button>
+      </div>
+
+      <div class="lf-table-wrap">
+        <table class="lf-table">
+          <thead>
+            <tr>
+              <th style="width:19%">Business</th>
+              <th style="width:14%">Location</th>
+              <th style="width:11%">Phone</th>
+              <th style="width:12%">Website</th>
+              <th style="width:8%">Rating</th>
+              <th style="width:11%">Socials</th>
+              <th style="width:25%">Key Observation</th>
+            </tr>
+          </thead>
+          <tbody id="lfRows">
+            <tr><td colspan="7"><div class="lf-empty">Choose an industry and location, then click <b>Search</b>.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-leadgen -->
+
+    <!-- ════ TAB: SEO AUDIT ════ -->
+    <div id="tab-seoaudit" class="tabpane">
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">🔍 SEO Audit</div>
+      <div style="font-size:.84rem;color:var(--text2);margin-bottom:16px">Run an instant SEO health check on any website — on-page, technical and social signals, with prioritized fixes.</div>
+      <div class="sa-bar">
+        <input id="saUrl" type="text" placeholder="e.g. acceio.com" />
+        <button class="btn btn-primary" id="saRunBtn" onclick="saRun()">Run Audit</button>
+      </div>
+      <div id="saResults"></div>
+    </div>
+
+    <!-- ════ TAB: SITE CRAWLER (AcceioSpider) ════ -->
+    <div id="tab-crawler" class="tabpane">
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">🕷 AcceioSpider — Site Crawler</div>
+      <div style="font-size:.84rem;color:var(--text2);margin-bottom:14px">Maps a website (up to 25 pages), finds broken links, and runs SEO checks on every page — with a fix for each issue. Read-only &amp; polite: GET requests only, respects robots.txt, never touches forms, logins or admin areas.</div>
+      <div class="sa-bar">
+        <input id="crUrl" type="text" placeholder="e.g. acceio.com" />
+        <button class="btn btn-primary" id="crBtn" onclick="crawlRun()">Start crawl</button>
+      </div>
+      <div id="crResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add New Customer</h3>
+    <input type="hidden" id="editUserId"/>
+    <div class="row-2">
+      <div class="field"><label>Full Name *</label><input id="fName" placeholder="Rajesh Singh"/></div>
+      <div class="field"><label>Client / Company *</label><input id="fCompany" placeholder="Acme Corp"/></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>Username *</label><input id="fUser" placeholder="rajesh_acme"/></div>
+      <div class="field"><label>Password *</label><input id="fPass" type="password" placeholder="min 8 chars"/></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="rajesh@acme.com"/></div>
+      <div class="field"><label>Plan</label>
+        <select class="field-sel" id="fPlan" onchange="updateExpiryPreview()">
+          <option value="Trial">Trial (2 days · 2 reports)</option>
+          <option value="Starter">Starter (3 months · 25 reports/mo)</option>
+          <option value="Growth">Growth (6 months · 50 reports/mo · Lead Gen 10/day)</option>
+          <option value="Scale">Scale (12 months · 200 reports/mo · Lead Gen 30/day)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" id="expiryPreviewField" style="margin-bottom:16px">
+      <label>Plan Expiry</label>
+      <div id="expiryPreview" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:.85rem;color:var(--accent);font-weight:600">
+        Select a plan to see expiry date
+      </div>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Calculated automatically from today. You can override below.</div>
+      <input id="fExpiry" type="date" style="width:100%;margin-top:6px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 14px;color:var(--text);font-size:.85rem;outline:none;" title="Override expiry date (optional)"/>
+    </div>
+    <div class="row-2" style="margin-bottom:16px">
+      <div class="field">
+        <label>Daily Hours Allowance</label>
+        <select class="field-sel" id="fDailyHours" onchange="updateSessionPreview()">
+          <option value="0">Unlimited (no daily cap)</option>
+          <option value="1">1 hour / day</option>
+          <option value="2">2 hours / day</option>
+          <option value="3">3 hours / day</option>
+          <option value="4">4 hours / day</option>
+          <option value="5">5 hours / day</option>
+          <option value="6">6 hours / day</option>
+          <option value="8">8 hours / day</option>
+          <option value="10">10 hours / day</option>
+          <option value="12">12 hours / day</option>
+          <option value="16">16 hours / day</option>
+          <option value="24">24 hours / day</option>
+        </select>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Dashboard access resets at midnight every day.</div>
+      </div>
+      <div class="field">
+        <label>Session Preview</label>
+        <div id="sessionPreview" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:.82rem;color:var(--text2);line-height:1.5">
+          No daily cap — unlimited access
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save Customer</button>
+    </div>
+    <div class="err" id="modalErr"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;">
+    <h3 id="confirmTitle" style="color:var(--danger)">Confirm</h3>
+    <p id="confirmMsg" style="font-size:.85rem;color:var(--text2);line-height:1.7;margin-bottom:20px;"></p>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button id="confirmBtn" class="btn btn-danger" onclick="runConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD OUTREACH EMAIL MODAL -->
+<div class="modal-overlay" id="lfEmailModal">
+  <div class="modal" style="max-width:560px;">
+    <h3 style="margin-bottom:4px">✉ Generate outreach email</h3>
+    <p style="font-size:.78rem;color:var(--text2);margin-bottom:18px">The observation for this lead is built into the draft. Add the recipient and send, or copy it into your own mailbox.</p>
+    <div class="field"><label>To (recipient email)</label><input id="lfEmailTo" type="email" placeholder="name@business.com — paste from Hunter"/></div>
+    <div class="field"><label>Subject</label><input id="lfEmailSubject" type="text"/></div>
+    <div class="field"><label>Message</label><textarea id="lfEmailBody" rows="11" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-size:.84rem;font-family:inherit;line-height:1.6;outline:none;resize:vertical"></textarea></div>
+    <div id="lfEmailMsg" style="display:none;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+      <button class="btn-ghost" onclick="closeLeadEmail()">Cancel</button>
+      <button class="btn-ghost" onclick="lfCopyEmail()">⧉ Copy</button>
+      <button id="lfSendBtn" class="btn btn-primary" onclick="lfSendEmail()">Send via EmailJS</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://acceio-api.onrender.com';
+let token = localStorage.getItem('acceio_admin_token');
+let allUsers = [];
+let _confirmFn = null;
+// Track which folders are open
+let openFolders = new Set();
+
+if(token) showAdmin();
+document.getElementById('aPass').addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+
+async function adminLogin(){
+  const u = document.getElementById('aUser').value.trim();
+  const p = document.getElementById('aPass').value;
+  const errEl = document.getElementById('aErr');
+  errEl.textContent = '';
+  try {
+    const res  = await fetch(`${API}/api/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    if(data.user.plan !== 'Scale' && data.user.username !== 'admin') throw new Error('Admin access required');
+    token = data.token;
+    localStorage.setItem('acceio_admin_token', token);
+    showAdmin();
+  } catch(e){ errEl.textContent = e.message; }
+}
+
+function showAdmin(){
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  loadUsers();
+  setTimeout(loadAnthropicBalance, 600); // load balance after users
+  setTimeout(loadPageSEOStats, 900);     // load PageSEO stats
+}
+function logout(){ localStorage.removeItem('acceio_admin_token'); location.reload(); }
+
+async function loadAnthropicBalance() {
+  const balEl  = document.getElementById('statAnthropicBalance');
+  const subEl  = document.getElementById('statAnthropicSub');
+  const panel  = document.getElementById('anthropicPanel');
+  const detail = document.getElementById('anthropicDetail');
+  if (!balEl) return;
+  balEl.textContent = '…';
+  subEl.textContent = 'Loading…';
+  try {
+    const res  = await fetch(`${API}/api/admin/anthropic-balance`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.source === 'estimated') {
+      balEl.textContent  = `~$${data.estimatedThisMonth}`;
+      subEl.textContent  = `This month · $${data.estimatedTotal} total`;
+      panel.style.display = 'block';
+      detail.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px">
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--warn)">$${data.estimatedThisMonth}</div>
+            <div style="font-size:.68rem;color:var(--muted)">Est. Cost This Month</div>
+          </div>
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--text)">${data.thisMonthReports}</div>
+            <div style="font-size:.68rem;color:var(--muted)">Reports This Month</div>
+          </div>
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--text2)">${data.totalReports}</div>
+            <div style="font-size:.68rem;color:var(--muted)">All-Time Reports</div>
+          </div>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);background:var(--card2);padding:10px 12px;border-radius:6px;line-height:1.6">
+          ℹ️ ${data.note}<br/>Estimated at <strong>$0.04 per report</strong> (avg Claude Haiku usage).
+          <a href="https://console.anthropic.com/settings/billing" target="_blank" style="color:var(--accent2);text-decoration:none;font-weight:600"> View real balance on Anthropic Console ↗</a>
+        </div>`;
+    } else if (data.source === 'credit_grants') {
+      const grants = data.data?.data || [];
+      const totalCredits = grants.reduce((a,g) => a+(g.amount||0),0);
+      const usedCredits  = grants.reduce((a,g) => a+(g.amount_used||0),0);
+      const remaining    = totalCredits - usedCredits;
+      balEl.textContent  = `$${(remaining/100).toFixed(2)}`;
+      subEl.textContent  = `Remaining of $${(totalCredits/100).toFixed(2)}`;
+      panel.style.display = 'block';
+      const pct = Math.min(100,(usedCredits/totalCredits*100));
+      const barColor = remaining/totalCredits < 0.2 ? 'var(--danger)' : remaining/totalCredits < 0.4 ? 'var(--warn)' : 'var(--success)';
+      detail.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px">
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--success)">$${(remaining/100).toFixed(2)}</div>
+            <div style="font-size:.68rem;color:var(--muted)">Credits Remaining</div>
+          </div>
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--warn)">$${(usedCredits/100).toFixed(2)}</div>
+            <div style="font-size:.68rem;color:var(--muted)">Credits Used</div>
+          </div>
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:1.4rem;font-weight:900;color:var(--text2)">$${(totalCredits/100).toFixed(2)}</div>
+            <div style="font-size:.68rem;color:var(--muted)">Total Credits</div>
+          </div>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+          <div style="height:100%;width:${pct.toFixed(1)}%;background:${barColor};border-radius:6px;transition:width .5s"></div>
+        </div>
+        <a href="https://console.anthropic.com/settings/billing" target="_blank" style="font-size:.75rem;color:var(--accent2);text-decoration:none;font-weight:600">Top up on Anthropic Console ↗</a>`;
+    } else {
+      balEl.textContent = '?';
+      subEl.textContent = 'Unavailable';
+    }
+  } catch(e) {
+    if (balEl) { balEl.textContent = 'Err'; subEl.textContent = e.message.slice(0,28); }
+  }
+}
+
+async function loadPageSEOStats() {
+  const todayEl = document.getElementById('statPageSEOToday');
+  const subEl   = document.getElementById('statPageSEOSub');
+  const panel   = document.getElementById('pageSEOPanel');
+  const statsEl = document.getElementById('pageSEOStats');
+  if (!todayEl) return;
+  todayEl.textContent = '…';
+  panel.style.display = 'block';
+  statsEl.textContent = 'Loading…';
+  try {
+    const res  = await fetch(`${API}/api/admin/pageseo/scans`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    todayEl.textContent = data.today;
+    subEl.textContent   = `${data.thisWeek} this week · ${data.total} total`;
+    statsEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--accent2)">${data.today}</div>
+          <div style="font-size:.68rem;color:var(--muted)">Scans Today</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--text)">${data.thisWeek}</div>
+          <div style="font-size:.68rem;color:var(--muted)">This Week</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--text2)">${data.total}</div>
+          <div style="font-size:.68rem;color:var(--muted)">All Time</div>
+        </div>
+      </div>
+      ${data.topUrls.length ? `
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Most Tested URLs</div>
+        ${data.topUrls.map(u => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--card2);border-radius:6px;margin-bottom:5px">
+            <span style="font-size:.78rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px">${u.url}</span>
+            <span style="font-size:.75rem;font-weight:700;color:var(--accent);margin-left:10px;flex-shrink:0">${u.count}×</span>
+          </div>`).join('')}` : ''}
+      ${data.recent.length ? `
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 8px">Recent Scans</div>
+        ${data.recent.slice(0,10).map(s => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--border);font-size:.76rem">
+            <span style="color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${s.url}</span>
+            <span style="color:var(--muted);flex-shrink:0;margin-left:8px">${s.device} · ${new Date(s.timestamp).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+          </div>`).join('')}` : '<div style="color:var(--muted);font-size:.82rem">No scans yet — share acceio.com/PageSEO to get started.</div>'}`;
+  } catch(e) {
+    todayEl.textContent = '?';
+    statsEl.textContent = 'Could not load: ' + e.message;
+  }
+}
+
+async function loadUsers(){
+  try {
+    const res = await fetch(`${API}/api/admin/users`,{headers:{'Authorization':'Bearer '+token}});
+    if(!res.ok){ if(res.status===401||res.status===403){ logout(); return; } throw new Error('Failed'); }
+    allUsers = await res.json();
+
+    // Group by company
+    const groups = {};
+    allUsers.forEach(u => {
+      const client = (u.company||'Uncategorized').trim();
+      if(!groups[client]) groups[client] = [];
+      groups[client].push(u);
+    });
+    document.getElementById('statClients').textContent = Object.keys(groups).length;
+    document.getElementById('statTotal').textContent   = allUsers.length;
+    document.getElementById('statActive').textContent  = allUsers.filter(u=>u.is_active).length;
+    document.getElementById('statScale').textContent   = allUsers.filter(u=>u.plan==='Scale').length;
+    renderClientDirs(groups);
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+function renderClientDirs(groups){
+  const container = document.getElementById('clientDirs');
+  const keys = Object.keys(groups);
+  if(!keys.length){
+    container.innerHTML = `<div class="no-clients"><div class="no-clients-icon">📂</div><div style="font-size:.92rem;font-weight:600;margin-bottom:4px;">No customers yet</div><div style="font-size:.78rem;">Click "+ Add Customer" to get started.</div></div>`;
+    return;
+  }
+  container.innerHTML = '';
+  keys.sort((a,b)=>a.localeCompare(b)).forEach(clientName=>{
+    container.appendChild(buildClientDir(clientName, groups[clientName]));
+  });
+}
+
+function buildClientDir(clientName, users){
+  const totalUsers  = users.length;
+  const activeCount = users.filter(u=>u.is_active).length;
+  const isOpen      = openFolders.has(clientName);
+  const safeId      = 'dir_' + clientName.replace(/[^a-z0-9]/gi,'_');
+
+  const div = document.createElement('div');
+  div.className = 'client-dir';
+  div.id = safeId;
+
+  div.innerHTML = `
+    <div class="client-header" onclick="toggleDir('${clientName}','${safeId}')">
+      <div class="client-name-row">
+        <span class="client-chevron${isOpen?' open':''}" id="chev_${safeId}">▶</span>
+        <span class="client-folder-icon">${isOpen?'📂':'📁'}</span>
+        <div style="min-width:0">
+          <div class="client-name">${clientName}</div>
+          <div class="client-meta">${totalUsers} user${totalUsers!==1?'s':''} · ${activeCount} active</div>
+        </div>
+      </div>
+      <div class="client-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal('${clientName.replace(/'/g,"\\'")}')">+ Add User</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteClient('${clientName.replace(/'/g,"\\'")}')">🗑 Delete</button>
+      </div>
+    </div>
+    <div class="client-users-panel${isOpen?' open':''}" id="panel_${safeId}">
+      <div class="client-users-inner">
+        <table class="users-table">
+          <thead><tr><th>Name</th><th>Username</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${users.map(u=>buildUserRow(u)).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildUserRow(u){
+  const uJson = JSON.stringify(u).replace(/"/g,'&quot;');
+  const toggleLabel = u.is_active ? 'Deactivate' : 'Activate';
+  // Format expiry
+  let expiryDisplay = '';
+  if (u.plan_expires_at) {
+    const exp  = new Date(u.plan_expires_at);
+    const days = Math.ceil((exp - new Date()) / 86400000);
+    const fmt  = exp.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    if (days <= 0)  expiryDisplay = `<span style="color:var(--danger);font-size:.68rem;font-weight:700">Expired ${fmt}</span>`;
+    else if (days <= 7) expiryDisplay = `<span style="color:var(--warn);font-size:.68rem;font-weight:700">⚠ ${days}d left · ${fmt}</span>`;
+    else expiryDisplay = `<span style="color:var(--muted);font-size:.68rem">Expires ${fmt}</span>`;
+  }
+  return `<tr>
+    <td style="font-weight:600">${u.name}</td>
+    <td style="color:var(--text2);font-size:.75rem">${u.username}</td>
+    <td>
+      <span class="plan-chip plan-${u.plan}">${u.plan}</span>
+      ${expiryDisplay ? `<br/>${expiryDisplay}` : ''}
+      ${u.daily_hours_limit ? `<br/><span style="font-size:.64rem;color:var(--accent2);font-weight:700">⏱ ${u.daily_hours_limit}h/day</span>` : ''}
+    </td>
+    <td><span class="active-dot ${u.is_active?'dot-on':'dot-off'}"></span>${u.is_active?'Active':'Inactive'}</td>
+    <td>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="editUser(${uJson})">Edit</button>
+        <button class="btn btn-warn btn-sm" onclick="confirmToggle(${u.id},'${u.name.replace(/'/g,"\\'")}',${u.is_active?1:0})">${toggleLabel}</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser(${u.id},'${u.name.replace(/'/g,"\\'")}')">🗑 Delete</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+// Plan expiry calculator
+const PLAN_EXPIRY_DAYS = { Trial: 2, Starter: 90, Growth: 180, Scale: 365 };
+function calcExpiryDate(plan, fromDate) {
+  const days = PLAN_EXPIRY_DAYS[plan];
+  if (!days) return null;
+  const d = new Date(fromDate || Date.now());
+  d.setDate(d.getDate() + days);
+  return d;
+}
+function updateExpiryPreview() {
+  const plan = document.getElementById('fPlan').value;
+  const exp  = calcExpiryDate(plan);
+  const prev = document.getElementById('expiryPreview');
+  if (!exp) { prev.textContent = 'No expiry'; return; }
+  const days = PLAN_EXPIRY_DAYS[plan];
+  prev.textContent = `Expires: ${exp.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'})} (${days} day${days!==1?'s':''} from today)`;
+  const dateInput = document.getElementById('fExpiry');
+  if (dateInput) dateInput.value = exp.toISOString().slice(0,10);
+}
+
+function updateSessionPreview() {
+  const hrs  = parseInt(document.getElementById('fDailyHours').value) || 0;
+  const prev = document.getElementById('sessionPreview');
+  if (!hrs) {
+    prev.textContent = 'No daily cap — unlimited access every day.';
+    prev.style.color = 'var(--text2)';
+    return;
+  }
+  const mins = hrs * 60;
+  prev.innerHTML = `<strong style="color:var(--accent2)">${hrs} hour${hrs!==1?'s':''}/day</strong> of dashboard access.<br/>
+    Timer starts on login and resets at midnight.<br/>
+    After ${hrs}h the client is automatically logged out.`;
+  prev.style.color = 'var(--text2)';
+}
+
+function toggleDir(clientName, safeId){
+  const panel = document.getElementById('panel_'+safeId);
+  const chev  = document.getElementById('chev_'+safeId);
+  const icon  = chev.nextElementSibling;
+  const isNowOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open', isNowOpen);
+  chev.classList.toggle('open', isNowOpen);
+  icon.textContent = isNowOpen ? '📂' : '📁';
+  if(isNowOpen) openFolders.add(clientName);
+  else openFolders.delete(clientName);
+}
+
+// ── ADD / EDIT MODAL ──
+function openAddModal(prefillCompany){
+  document.getElementById('modalTitle').textContent = 'Add New Customer';
+  document.getElementById('editUserId').value = '';
+  ['fName','fUser','fPass','fEmail'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCompany').value   = prefillCompany||'';
+  document.getElementById('fPlan').value      = 'Starter';
+  document.getElementById('fExpiry').value    = '';
+  document.getElementById('fDailyHours').value = '0';
+  document.getElementById('modalErr').textContent = '';
+  updateExpiryPreview();
+  updateSessionPreview();
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+function editUser(u){
+  document.getElementById('modalTitle').textContent = 'Edit Customer';
+  document.getElementById('editUserId').value  = u.id;
+  document.getElementById('fName').value    = u.name||'';
+  document.getElementById('fUser').value    = u.username||'';
+  document.getElementById('fPass').value    = '';
+  document.getElementById('fEmail').value   = u.email||'';
+  document.getElementById('fCompany').value = u.company||'';
+  document.getElementById('fPlan').value    = u.plan||'Starter';
+  // Pre-fill the expiry date if it exists
+  if (u.plan_expires_at) {
+    document.getElementById('fExpiry').value = new Date(u.plan_expires_at).toISOString().slice(0,10);
+    const exp  = new Date(u.plan_expires_at);
+    const days = Math.ceil((exp - new Date()) / 86400000);
+    const fmt  = exp.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('expiryPreview').textContent = `Expires: ${fmt}${days<=0?' (EXPIRED)':`  (${days} days left)`}`;
+  } else {
+    updateExpiryPreview();
+  }
+  document.getElementById('fDailyHours').value = u.daily_hours_limit || 0;
+  updateSessionPreview();
+  document.getElementById('modalErr').textContent = '';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+async function saveUser(){
+  const id      = document.getElementById('editUserId').value;
+  const plan    = document.getElementById('fPlan').value;
+  const expDate = document.getElementById('fExpiry').value;
+  const body = {
+    name:               document.getElementById('fName').value.trim(),
+    username:           document.getElementById('fUser').value.trim().toLowerCase(),
+    password:           document.getElementById('fPass').value,
+    email:              document.getElementById('fEmail').value.trim(),
+    company:            document.getElementById('fCompany').value.trim(),
+    plan,
+    plan_expires_at:    expDate ? new Date(expDate).toISOString() : undefined,
+    daily_hours_limit:  parseInt(document.getElementById('fDailyHours').value) || 0,
+  };
+  const errEl = document.getElementById('modalErr');
+  if(!body.name||!body.username){ errEl.textContent='Name and username required'; return; }
+  if(!body.company){ errEl.textContent='Client/Company name is required to assign a folder'; return; }
+  if(!id && !body.password){ errEl.textContent='Password required for new users'; return; }
+  if(body.password && body.password.length<8){ errEl.textContent='Password must be at least 8 characters'; return; }
+  try {
+    const url    = id ? `${API}/api/admin/users/${id}` : `${API}/api/admin/users`;
+    const method = id ? 'PUT' : 'POST';
+    if(id && !body.password) delete body.password;
+    if(body.plan_expires_at === undefined) delete body.plan_expires_at;
+    const res  = await fetch(url,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    openFolders.add(body.company);
+    closeModal();
+    loadUsers();
+  } catch(e){ errEl.textContent = e.message; }
+}
+
+// ── CONFIRM MODAL ──
+function confirmDeleteUser(id, name){
+  showConfirm(
+    '🗑 Delete User',
+    `Permanently delete <strong>${name}</strong>? Their reports will also be removed. This cannot be undone.`,
+    async ()=>{
+      const res = await fetch(`${API}/api/admin/users/${id}`,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+      if(!res.ok){ const d=await res.json(); throw new Error(d.error||'Delete failed'); }
+    },
+    'Delete User'
+  );
+}
+
+function confirmToggle(id, name, isActive){
+  const action = isActive ? 'Deactivate' : 'Activate';
+  showConfirm(
+    `${action} User`,
+    `${action} account for <strong>${name}</strong>?${isActive ? ' They will be immediately signed out of any active session.' : ''}`,
+    async ()=>{
+      const res = await fetch(`${API}/api/admin/users/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({is_active: isActive?0:1})});
+      if(!res.ok){ const d=await res.json(); throw new Error(d.error||'Update failed'); }
+    },
+    action
+  );
+}
+
+function confirmDeleteClient(clientName){
+  const users = allUsers.filter(u=>(u.company||'Uncategorized').trim()===clientName.trim());
+  showConfirm(
+    '🗑 Delete Client Folder',
+    `Permanently delete folder <strong>${clientName}</strong> and all <strong>${users.length} user${users.length!==1?'s':''}</strong> inside it? All their reports will also be deleted. <br/><br/><span style="color:var(--danger);font-weight:700">This cannot be undone.</span>`,
+    async ()=>{
+      for(const u of users){
+        await fetch(`${API}/api/admin/users/${u.id}`,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+      }
+      openFolders.delete(clientName);
+    },
+    'Delete All'
+  );
+}
+
+function showConfirm(title, msg, fn, btnLabel='Confirm'){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').innerHTML     = msg;
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = btnLabel;
+  btn.className   = btnLabel.toLowerCase().includes('activ') ? 'btn btn-warn' : 'btn btn-danger';
+  _confirmFn = fn;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm(){ document.getElementById('confirmModal').classList.remove('show'); _confirmFn=null; }
+async function runConfirm(){
+  if(!_confirmFn) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled=true; btn.textContent='Processing…';
+  try { await _confirmFn(); loadUsers(); } catch(e){ alert('Error: '+e.message); }
+  btn.disabled=false;
+  closeConfirm();
+}
+// ════════════════════════════════════════════
+//  TABS + LEAD GENERATION (Lead Finder)
+// ════════════════════════════════════════════
+function switchTab(name){
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const pane = document.getElementById('tab-'+name);
+  const btn  = document.getElementById('tabbtn-'+name);
+  if(pane) pane.classList.add('active');
+  if(btn)  btn.classList.add('active');
+}
+
+let LF_CURRENT = [];
+let LF_INDUSTRY = '';
+let LF_LOCATION = '';
+
+// ── EmailJS config for one-click outreach ──
+// Uses your existing EmailJS account. Create a NEW template for outreach (see instructions)
+// and paste its template ID below. Until then, the button falls back to opening your mail client.
+const LF_EMAILJS_SERVICE  = 'service_wgh0p69';
+const LF_EMAILJS_TEMPLATE = 'template_REPLACE_WITH_OUTREACH_ID'; // ← replace with your new outreach template ID
+const LF_EMAILJS_PUBLICKEY = 'vvL1rtD3HeuGA0B0E';
+let _lfEmailIdx = null;
+
+function lfStars(r){
+  if(!r) return '<span class="lf-none">no rating</span>';
+  const full = Math.round(r);
+  return '<span class="st">'+'★'.repeat(full)+'</span><span style="color:var(--muted)">'+'★'.repeat(Math.max(0,5-full))+'</span>';
+}
+function lfChip(url,label){
+  if(!url) return '';
+  return `<a class="lf-chip" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+}
+function lfEsc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+async function runLeadSearch(){
+  const industrySel = document.getElementById('lfIndustry');
+  const industry    = industrySel.value;
+  const industryLbl = industrySel.options[industrySel.selectedIndex].text;
+  const location    = document.getElementById('lfLocation').value.trim();
+  const limit       = document.getElementById('lfLimit').value;
+  const hasWebsite  = document.getElementById('lfHasSite').value;
+  const rows        = document.getElementById('lfRows');
+  const btn         = document.getElementById('lfSearchBtn');
+
+  if(!location){ alert('Please enter a location.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Searching…';
+  rows.innerHTML = `<tr><td colspan="7"><div class="lf-empty"><span class="lf-spin"></span>Searching ${lfEsc(industryLbl)} in ${lfEsc(location)}… (reading each website + drafting observations — this can take several seconds)</div></td></tr>`;
+
+  try{
+    const res = await fetch(`${API}/api/admin/leadgen/search`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({ industry, industryLabel:industryLbl, location, limit:Number(limit), hasWebsite })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Search failed');
+
+    document.getElementById('lfDemoBadge').style.display = data.demo ? 'inline-block' : 'none';
+    let list = data.results || [];
+    if(hasWebsite === 'yes') list = list.filter(x=>x.website);
+    LF_CURRENT = list; LF_INDUSTRY = industryLbl; LF_LOCATION = location;
+    document.getElementById('lfCnt').textContent = list.length;
+    document.getElementById('lfCtx').textContent = '· '+industryLbl+' · '+location + (data.demo?' · sample data':'');
+
+    if(!list.length){
+      rows.innerHTML = `<tr><td colspan="7"><div class="lf-empty">No results found. Try a broader location or a different industry.</div></td></tr>`;
+      return;
+    }
+    rows.innerHTML = list.map((x,idx)=>{
+      const soc = [lfChip(x.instagram,'IG'),lfChip(x.facebook,'FB'),lfChip(x.linkedin,'LinkedIn')].filter(Boolean).join('');
+      const obs = x.observation
+        ? `<div class="lf-obs">${lfEsc(x.observation)}</div>`
+        : `<div class="lf-none" style="margin-bottom:8px">no observation</div>`;
+      return `<tr>
+        <td><div class="lf-biz">${lfEsc(x.name)}</div><span class="lf-cat">${lfEsc(industryLbl)}</span></td>
+        <td style="color:var(--text2)">${lfEsc(x.address||'—')}</td>
+        <td>${x.phone?lfEsc(x.phone):'<span class="lf-none">—</span>'}</td>
+        <td class="lf-web">${x.website?`<a href="${lfEsc(x.website)}" target="_blank" rel="noopener">${lfEsc(x.website.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a>`:'<span class="lf-none">not listed</span>'}</td>
+        <td class="lf-rating">${lfStars(x.rating)} ${x.rating?lfEsc(x.rating):''} ${x.reviews?`<small>(${lfEsc(x.reviews)})</small>`:''}</td>
+        <td>${soc?`<div class="lf-soc">${soc}</div>`:'<span class="lf-none">none found</span>'}</td>
+        <td>${obs}<button class="lf-emailbtn" onclick="openLeadEmail(${idx})">✉ Generate email</button></td>
+      </tr>`;
+    }).join('');
+  }catch(err){
+    rows.innerHTML = `<tr><td colspan="7"><div class="lf-empty" style="color:var(--danger)">${lfEsc(err.message)}</div></td></tr>`;
+    document.getElementById('lfCnt').textContent = '0';
+  }finally{
+    btn.disabled = false; btn.textContent = 'Search';
+  }
+}
+
+function exportLeadsCSV(){
+  if(!LF_CURRENT.length){ alert('Run a search first.'); return; }
+  const head = ['Business','Address','Phone','Website','Rating','Reviews','Instagram','Facebook','LinkedIn','Key Observation'];
+  const lines = [head.join(',')];
+  LF_CURRENT.forEach(x=>{
+    const row = [x.name,x.address,x.phone,x.website,x.rating,x.reviews,x.instagram,x.facebook,x.linkedin,x.observation]
+      .map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(',');
+    lines.push(row);
+  });
+  const blob = new Blob([lines.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'acceio-leads.csv';
+  a.click();
+}
+// ── One-click outreach email ──
+function lfBuildEmail(x){
+  const biz = x.name || 'your business';
+  const obsLine = x.observation
+    ? `I had a quick look at your online presence and one thing stood out: ${x.observation}`
+    : `I had a quick look at ${biz}'s online presence and spotted a few opportunities to bring in more customers online.`;
+  const subject = `A quick idea for ${biz}'s online presence`;
+  const message =
+`Hi there,
+
+I came across ${biz} recently. ${obsLine}
+
+I'm with Acceio Media, a digital marketing agency that helps brands grow through social media, SEO, content and lead generation.
+
+As a no-strings gesture, I'd be happy to put together a free content & growth audit tailored to ${biz}. You can also get a free instant SEO snapshot of your site here: https://acceio.com/PageSEO — and see examples of our work here: https://acceio.com/portfolio
+
+Open to a quick 15-minute call this week? Just reply and I'll share a couple of times.
+
+Warm regards,
+Acceio Media
+sales@acceio.com · acceio.com`;
+  return { subject, message };
+}
+
+function openLeadEmail(idx){
+  const x = LF_CURRENT[idx];
+  if(!x) return;
+  _lfEmailIdx = idx;
+  const { subject, message } = lfBuildEmail(x);
+  document.getElementById('lfEmailTo').value = '';
+  document.getElementById('lfEmailSubject').value = subject;
+  document.getElementById('lfEmailBody').value = message;
+  document.getElementById('lfEmailMsg').style.display = 'none';
+  document.getElementById('lfEmailModal').classList.add('show');
+}
+function closeLeadEmail(){ document.getElementById('lfEmailModal').classList.remove('show'); }
+
+function lfCopyEmail(){
+  const body = document.getElementById('lfEmailBody').value;
+  const subject = document.getElementById('lfEmailSubject').value;
+  navigator.clipboard.writeText('Subject: '+subject+'\n\n'+body).then(()=>{
+    lfEmailStatus('✓ Copied subject + body to clipboard.', true);
+  }).catch(()=>lfEmailStatus('Could not copy automatically — select the text manually.', false));
+}
+
+function lfEmailStatus(text, ok){
+  const el = document.getElementById('lfEmailMsg');
+  el.textContent = text; el.style.display = 'block';
+  el.style.color = ok ? 'var(--success)' : 'var(--danger)';
+}
+
+async function lfSendEmail(){
+  const to      = document.getElementById('lfEmailTo').value.trim();
+  const subject = document.getElementById('lfEmailSubject').value.trim();
+  const message = document.getElementById('lfEmailBody').value.trim();
+  if(!to){ lfEmailStatus('Enter the recipient email address first.', false); return; }
+
+  const sendBtn = document.getElementById('lfSendBtn');
+  const templateReady = window.emailjs && LF_EMAILJS_TEMPLATE && !LF_EMAILJS_TEMPLATE.includes('REPLACE');
+
+  if(templateReady){
+    sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+    try{
+      await emailjs.send(LF_EMAILJS_SERVICE, LF_EMAILJS_TEMPLATE, {
+        to_email: to, subject, message,
+        business: (LF_CURRENT[_lfEmailIdx] && LF_CURRENT[_lfEmailIdx].name) || ''
+      });
+      lfEmailStatus('✓ Email sent via EmailJS.', true);
+      setTimeout(closeLeadEmail, 1500);
+    }catch(e){
+      lfEmailStatus('EmailJS error: '+(e?.text||e?.message||'failed')+'. Opening your mail client instead…', false);
+      lfMailto(to, subject, message);
+    }finally{
+      sendBtn.disabled = false; sendBtn.textContent = 'Send via EmailJS';
+    }
+  } else {
+    // No outreach template configured yet → open mail client pre-filled
+    lfMailto(to, subject, message);
+    lfEmailStatus('Opened your mail client with the draft pre-filled.', true);
+  }
+}
+function lfMailto(to, subject, message){
+  window.open(`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`,'_blank');
+}
+
+// ════ SEO AUDIT (admin) ════
+function saColor(s){ return s>=70?'var(--success)':s>=40?'var(--warn)':'var(--danger)'; }
+function saCheckRow(c){ return `<div class="sa-check"><div class="sa-dot ${c.status}"></div><div><div class="sa-cname">${lfEsc(c.name)}</div><div class="sa-ccat">${lfEsc(c.category)}</div></div><div class="sa-cdetail">${lfEsc(c.detail)}</div></div>`; }
+function saToggleMore(){ const m=document.getElementById('saMore'),b=document.getElementById('saMoreBtn'); if(!m)return; const show=m.style.display==='none'; m.style.display=show?'':'none'; b.textContent=show?'Hide in-depth analysis ↑':b.dataset.label; }
+function saRender(d,out){
+  const ring=`<div class="sa-ring" style="background:conic-gradient(${saColor(d.score)} ${d.score*3.6}deg, var(--card2) 0)"><div class="inner"><div class="num" style="color:${saColor(d.score)}">${d.score}</div><div class="lbl">SEO Score</div></div></div>`;
+  const cats=d.categories.map(c=>`<div class="sa-cat"><div class="cn">${lfEsc(c.label)}</div><div class="bar"><div class="fill" style="width:${c.score}%;background:${saColor(c.score)}"></div></div><div class="pct">${c.score}%</div></div>`).join('');
+  const top3=d.checks.slice(0,3).map(saCheckRow).join('');
+  const rest=d.checks.slice(3).map(saCheckRow).join('');
+  const moreLabel=`View in-depth analysis (${d.checks.length-3} more) ↓`;
+  out.innerHTML=`
+    <div class="sa-top">${ring}<div><div style="font-weight:800;margin-bottom:4px">${lfEsc(d.domain)}</div><div class="sa-summary"><span class="sa-pill p">${d.summary.pass} passed</span><span class="sa-pill w">${d.summary.warn} warnings</span><span class="sa-pill f">${d.summary.fail} critical</span></div><div class="sa-cats">${cats}</div></div></div>
+    <div class="sa-sect-title">Top issues &amp; recommendations</div>
+    <div class="sa-checks">${top3}</div>
+    ${rest?`<button class="sa-more-btn" id="saMoreBtn" data-label="${moreLabel}" onclick="saToggleMore()">${moreLabel}</button><div class="sa-checks" id="saMore" style="display:none">${rest}</div>`:''}`;
+}
+async function saRun(){
+  const url=document.getElementById('saUrl').value.trim();
+  const out=document.getElementById('saResults'), btn=document.getElementById('saRunBtn');
+  if(!url){ alert('Enter a website URL.'); return; }
+  btn.disabled=true; btn.textContent='Auditing…';
+  out.innerHTML='<div class="sa-empty"><span class="sa-spin"></span>Running SEO checks on '+lfEsc(url)+'…</div>';
+  try{
+    const res=await fetch(`${API}/api/seo-audit`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({url})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Audit failed');
+    if(data.error){ out.innerHTML=`<div class="sa-empty" style="color:var(--danger)">${lfEsc(data.error)}</div>`; return; }
+    saRender(data,out);
+  }catch(e){ out.innerHTML=`<div class="sa-empty" style="color:var(--danger)">${lfEsc(e.message)}</div>`; }
+  finally{ btn.disabled=false; btn.textContent='Run Audit'; }
+}
+
+// ════ ACCEIOSPIDER (site crawler) ════
+function crColor(s){ return s>=70?'var(--success)':s>=40?'var(--warn)':'var(--danger)'; }
+function crStatusBadge(st){ const bad=!(st>=200&&st<400); return `<span class="cr-status${bad?' bad':''}">${st||'ERR'}</span>`; }
+function crNode(n){
+  const mark = n.broken ? '<span class="cr-x">✗</span>' : (n.issues>0 ? '<span class="cr-warn">●</span>' : '<span class="cr-ok">✓</span>');
+  const label = n.broken ? 'link broken' : (n.issues>0 ? n.issues+' issue'+(n.issues>1?'s':'') : 'clean');
+  const kids = (n.children||[]).map(crNode).join('');
+  return `<div class="cr-node">
+    <div class="cr-row${n.broken?' broken':''}">${mark} <span class="cr-path">${lfEsc(n.path||n.url)}</span> ${crStatusBadge(n.status)} <span class="cr-meta">${label}</span></div>
+    ${kids?`<div class="cr-kids">${kids}</div>`:''}
+  </div>`;
+}
+function crCheckRow(c){
+  return `<div class="cr-issue"><div class="dot ${c.status}"></div><div><div class="msg">${lfEsc(c.name)} <span class="cr-cat">· ${lfEsc(c.category)}</span></div><div class="fix">${lfEsc(c.detail)}</div></div></div>`;
+}
+function crPrint(){ window.print(); }
+function crRender(d,out){
+  const s=d.summary;
+  const printBtn=`<div class="crmprint-hide" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-weight:800;font-size:1rem">Report for ${lfEsc(d.domain)}</div><button class="btn btn-primary" onclick="crPrint()">🖨 Print / Save as PDF</button></div>`;
+  const reportHead=`<div class="cr-print-head"><div style="font-size:1.3rem;font-weight:800">AcceioSpider — SEO Crawl Report</div><div style="color:var(--muted);font-size:.8rem">${lfEsc(d.domain)} · ${new Date().toLocaleString()}</div></div>`;
+  const summary=`<div class="cr-summary">
+    <div class="cr-stat"><div class="n" style="color:${crColor(s.health)}">${s.health}</div><div class="l">Site Health</div></div>
+    <div class="cr-stat"><div class="n">${s.crawled}</div><div class="l">Pages Crawled</div></div>
+    <div class="cr-stat"><div class="n" style="color:${s.broken?'var(--danger)':'var(--success)'}">${s.broken}</div><div class="l">Broken Links</div></div>
+    <div class="cr-stat"><div class="n" style="color:${s.issues?'var(--warn)':'var(--success)'}">${s.issues}</div><div class="l">SEO Issues</div></div>
+  </div>`;
+  // Site-wide SEO score + category rollup
+  const ring=`<div class="sa-ring" style="background:conic-gradient(${crColor(d.score)} ${d.score*3.6}deg, var(--card2) 0)"><div class="inner"><div class="num" style="color:${crColor(d.score)}">${d.score}</div><div class="lbl">SEO Score</div></div></div>`;
+  const cats=(d.categories||[]).map(c=>`<div class="sa-cat"><div class="cn">${lfEsc(c.label)}</div><div class="bar"><div class="fill" style="width:${c.score}%;background:${crColor(c.score)}"></div></div><div class="pct">${c.score}%</div></div>`).join('');
+  const cs=d.checkSummary||{pass:0,warn:0,fail:0};
+  const scoreSection=`<div class="sa-top">${ring}<div><div class="sa-summary"><span class="sa-pill p">${cs.pass} passed</span><span class="sa-pill w">${cs.warn} warnings</span><span class="sa-pill f">${cs.fail} critical</span></div><div class="sa-cats">${cats}</div></div></div>`;
+  // Site-level checks (robots/sitemap)
+  const siteC=(d.siteChecks&&d.siteChecks.length)?`<div class="cr-sect">🌐 Site-level checks</div><div class="cr-report">${d.siteChecks.map(crCheckRow).join('')}</div>`:'';
+  // Map
+  const tree=`<div class="cr-sect">🗺 Site map <span style="font-weight:500;color:var(--muted);font-size:.78rem">— red ✗ marks broken links</span></div><div class="cr-tree">${crNode(d.tree)}</div>`;
+  // Broken links
+  const broken = d.brokenLinks.length
+    ? `<div class="cr-sect">🔗 Broken links (${d.brokenLinks.length})</div><div class="cr-broken-list">${d.brokenLinks.map(b=>`<div class="cr-bl"><div><div class="to">✗ ${lfEsc(b.to)}</div><div class="from">linked from ${lfEsc(b.from)}</div></div><div><span class="cr-status bad">${b.status}</span></div></div>`).join('')}</div>`
+    : `<div class="cr-sect">🔗 Broken links</div><div class="cr-clean" style="padding:6px 2px">✓ No broken links found.</div>`;
+  // Per-page full audit
+  const report=`<div class="cr-sect">📋 Page-by-page SEO audit</div><div class="cr-report">${d.pages.map(p=>{
+    const nonPass=(p.checks||[]).filter(c=>c.status!=='pass');
+    let body;
+    if(p.broken){ body=`<div class="cr-issue"><div class="dot fail"></div><div><div class="msg">Page returned ${p.status||'no response'}</div><div class="fix">Fix or remove links pointing here, or restore the page.</div></div></div>`; }
+    else if(nonPass.length){ body=nonPass.map(crCheckRow).join('')+`<div class="cr-clean" style="margin-top:6px">✓ ${(p.checks.length-nonPass.length)} checks passed</div>`; }
+    else { body='<div class="cr-clean">✓ All checks passed on this page.</div>'; }
+    const scoreBadge=p.broken?'':`<span class="cr-status" style="color:${crColor(p.score)};border-color:var(--border2)">${p.score}/100</span> `;
+    return `<div class="cr-page"><div class="ph"><span class="pu">${lfEsc(p.url)}</span><span>${scoreBadge}${crStatusBadge(p.status)}</span></div>${body}</div>`;
+  }).join('')}</div>`;
+  out.innerHTML=printBtn+`<div id="crPrintArea">${reportHead}${summary}${scoreSection}${siteC}${tree}${broken}${report}</div>`;
+}
+async function crawlRun(){
+  const url=document.getElementById('crUrl').value.trim();
+  const out=document.getElementById('crResults'), btn=document.getElementById('crBtn');
+  if(!url){ alert('Enter a website URL.'); return; }
+  btn.disabled=true; btn.textContent='Crawling…';
+  out.innerHTML='<div class="sa-empty"><span class="sa-spin"></span>AcceioSpider is crawling '+lfEsc(url)+'… mapping pages, running the full SEO audit on each &amp; checking links (this can take up to a minute).</div>';
+  try{
+    const res=await fetch(`${API}/api/admin/crawl`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({url,maxPages:25})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Crawl failed');
+    crRender(data,out);
+  }catch(e){ out.innerHTML=`<div class="sa-empty" style="color:var(--danger)">${lfEsc(e.message)}</div>`; }
+  finally{ btn.disabled=false; btn.textContent='Start crawl'; }
+}
+</script>
+</body>
+</html>
