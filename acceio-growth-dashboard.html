@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Acceio · Growth Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0f; --panel:#101218; --card:#14161f; --card-2:#171a24;
+  --line:#23252e; --line-2:#2b2e3a;
+  --txt:#ffffff; --muted:#9aa0ab; --dim:#646a76;
+  --lime:#c7ff3f; --lime-dim:#9bc62f; --orange:#ff6a2c;
+  --good:#4ade80; --bad:#f87171; --radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--txt);
+  -webkit-font-smoothing:antialiased;line-height:1.5;padding:24px;max-width:1180px;margin:0 auto}
+@media(max-width:640px){body{padding:16px}}
+
+/* ── header ── */
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--lime);color:#000;
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px}
+.client-name{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.client-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.period{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+  border-radius:30px;padding:8px 8px 8px 16px;font-size:13px;color:var(--muted)}
+.period select{background:var(--card-2);color:var(--txt);border:1px solid var(--line-2);
+  border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+
+/* ── hero revenue ── */
+.hero{background:linear-gradient(180deg,#14161f,#101218);border:1px solid var(--line);
+  border-radius:22px;padding:30px 32px;margin-bottom:18px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;
+  background:radial-gradient(circle,rgba(199,255,63,.10),transparent 70%);pointer-events:none}
+.hero-label{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.hero-amt{font-size:64px;font-weight:900;letter-spacing:-.03em;line-height:1;margin:12px 0 6px}
+.hero-amt span{color:var(--lime)}
+.hero-chain{font-size:14.5px;color:var(--muted)}
+.hero-chain b{color:var(--txt);font-weight:700}
+.hero-up{display:inline-flex;align-items:center;gap:5px;color:var(--good);font-weight:700;
+  font-size:13px;background:rgba(74,222,128,.10);padding:4px 11px;border-radius:20px;margin-left:6px}
+
+/* ── badges ── */
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 8px;border-radius:6px;vertical-align:middle}
+.b-live{background:rgba(199,255,63,.13);color:var(--lime)}
+.b-est{background:rgba(255,106,44,.14);color:var(--orange)}
+
+/* ── kpi grid ── */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.grid{grid-template-columns:1fr}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.kpi-name{font-size:13px;color:var(--muted);font-weight:600}
+.kpi-val{font-size:34px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.kpi-val small{font-size:18px;color:var(--muted);font-weight:700}
+.kpi-delta{font-size:12.5px;font-weight:700;margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--dim)}
+.stars{color:var(--lime);font-size:13px;letter-spacing:1px}
+
+/* ── panels ── */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:18px}
+.panel-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+.panel-t{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.panel-s{font-size:12.5px;color:var(--dim)}
+
+/* ── funnel ── */
+.funnel{display:flex;flex-direction:column;gap:11px}
+.fstage{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:14px}
+@media(max-width:560px){.fstage{grid-template-columns:110px 1fr 52px;gap:10px}}
+.fname{font-size:13.5px;color:var(--muted);font-weight:600}
+.fname b{color:var(--txt);display:block;font-size:11px;color:var(--dim);font-weight:500;margin-top:2px}
+.ftrack{height:34px;background:var(--card-2);border-radius:9px;overflow:hidden}
+.ffill{height:100%;border-radius:9px;background:linear-gradient(90deg,var(--lime-dim),var(--lime));
+  display:flex;align-items:center;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.ffill.est{background:linear-gradient(90deg,#b85626,var(--orange))}
+.fcount{font-size:15px;font-weight:800;text-align:right}
+.fdrop{font-size:11px;color:var(--dim);padding-left:164px}
+@media(max-width:560px){.fdrop{padding-left:120px}}
+
+/* ── two-col ── */
+.cols{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
+@media(max-width:820px){.cols{grid-template-columns:1fr}}
+
+/* ── chart ── */
+.chart-wrap{width:100%}
+.chart-legend{display:flex;gap:18px;font-size:12px;color:var(--muted);margin-top:10px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ── reputation / rank ── */
+.repo{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.repo-score{font-size:42px;font-weight:900;letter-spacing:-.02em}
+.repo-sub{font-size:13px;color:var(--muted)}
+.ranklist{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.rank{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;
+  padding:11px 0;border-top:1px solid var(--line)}
+.rank-kw{color:var(--muted)}
+.rank-pos{font-weight:800}
+.rank-pos span{font-size:12px;font-weight:700;margin-left:7px}
+
+/* ── recommendations ── */
+.recs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.recs{grid-template-columns:1fr}}
+.rec{background:var(--card-2);border:1px solid var(--line);border-left:3px solid var(--lime);
+  border-radius:0 12px 12px 0;padding:16px 18px}
+.rec.orange{border-left-color:var(--orange)}
+.rec-tag{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime);margin-bottom:7px}
+.rec.orange .rec-tag{color:var(--orange)}
+.rec-txt{font-size:13.5px;color:#d6d9e0;line-height:1.55}
+.rec-txt b{color:#fff}
+
+/* ── advanced (hidden tech) ── */
+.adv-toggle{width:100%;background:var(--panel);border:1px dashed var(--line-2);color:var(--muted);
+  border-radius:var(--radius);padding:15px;font-size:13.5px;font-weight:600;font-family:inherit;
+  cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}
+.adv-toggle:hover{color:var(--txt);border-color:var(--dim)}
+.adv-body{display:none;margin-top:14px}
+.adv-body.open{display:block}
+.adv-row{display:flex;justify-content:space-between;font-size:13px;padding:11px 0;border-top:1px solid var(--line);color:var(--muted)}
+.adv-row:first-child{border-top:none}
+.adv-row b{color:var(--txt)}
+
+.foot{text-align:center;color:var(--dim);font-size:12px;margin-top:24px}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.fade{opacity:0;transform:translateY(8px);animation:in .5s forwards}
+@keyframes in{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms!important}
+  .fade{opacity:1!important;transform:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="top fade">
+  <div class="brand">
+    <div class="logo">A</div>
+    <div>
+      <div class="client-name" id="clientName">—</div>
+      <div class="client-sub" id="clientSub">—</div>
+    </div>
+  </div>
+  <div class="period">
+    Showing
+    <select id="period">
+      <option>This month</option>
+      <option>Last 30 days</option>
+      <option>Last 90 days</option>
+    </select>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero fade" style="animation-delay:.05s">
+  <div class="hero-label">Estimated revenue generated</div>
+  <div class="hero-amt" id="heroAmt">—</div>
+  <div class="hero-chain" id="heroChain">—</div>
+  <div style="margin-top:14px"><span class="badge b-est">Estimated</span>
+    <span class="hero-chain" style="margin-left:8px;font-size:13px" id="heroNote"></span></div>
+</div>
+
+<!-- KPIs -->
+<div class="grid" id="kpis"></div>
+
+<!-- FUNNEL -->
+<div class="panel fade" style="animation-delay:.1s">
+  <div class="panel-h">
+    <div><div class="panel-t">Where customers come from</div>
+      <div class="panel-s">Every visitor, tracked from first click to booking</div></div>
+    <span class="badge b-live">Live</span>
+  </div>
+  <div class="funnel" id="funnel"></div>
+</div>
+
+<!-- TREND + REPUTATION -->
+<div class="cols">
+  <div class="panel fade" style="animation-delay:.12s;margin-bottom:0">
+    <div class="panel-h">
+      <div><div class="panel-t">Visitors &amp; leads</div>
+        <div class="panel-s">Last 30 days</div></div>
+      <span class="badge b-live">Live</span>
+    </div>
+    <div class="chart-wrap" id="chart"></div>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#378add"></span>Visitors</span>
+      <span><span class="dot" style="background:var(--lime)"></span>Leads</span>
+    </div>
+  </div>
+
+  <div class="panel fade" style="animation-delay:.14s;margin-bottom:0">
+    <div class="panel-h">
+      <div><div class="panel-t">Reputation &amp; ranking</div></div>
+      <span class="badge b-live">Live</span>
+    </div>
+    <div class="repo">
+      <div class="repo-score" id="repScore">—</div>
+      <div class="repo-sub" id="repSub">—</div>
+    </div>
+    <div class="stars" id="repStars"></div>
+    <div class="ranklist" id="ranks"></div>
+  </div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div class="panel fade" style="animation-delay:.16s">
+  <div class="panel-h">
+    <div><div class="panel-t">What to do next</div>
+      <div class="panel-s">Found by scanning your site against nearby competitors</div></div>
+  </div>
+  <div class="recs" id="recs"></div>
+</div>
+
+<!-- ADVANCED (hidden technical) -->
+<button class="adv-toggle fade" style="animation-delay:.18s" id="advBtn" aria-expanded="false">
+  <span>Advanced SEO &amp; technical audit</span><span id="advCaret">▾</span>
+</button>
+<div class="adv-body" id="advBody">
+  <div class="panel" style="margin-top:0">
+    <div class="adv-row"><span>Technical crawl health</span><b id="a1">—</b></div>
+    <div class="adv-row"><span>Meta &amp; titles coverage</span><b id="a2">—</b></div>
+    <div class="adv-row"><span>Schema markup</span><b id="a3">—</b></div>
+    <div class="adv-row"><span>Mobile speed (LCP)</span><b id="a4">—</b></div>
+    <div class="adv-row"><span>Indexed pages</span><b id="a5">—</b></div>
+  </div>
+</div>
+
+<div class="foot">Powered by Acceio · <span class="badge b-live">Live</span> = tracked automatically &nbsp;·&nbsp; <span class="badge b-est">Estimated</span> = modeled, gets exact once booking is connected</div>
+
+<script>
+/* ───────────────────────────────────────────────
+   WIRE REAL DATA HERE.
+   Live tiles  → your tracking snippet + Google Places API + SERP API
+   Est tiles   → leads × conversion × valuePerPatient (you set the value once)
+─────────────────────────────────────────────── */
+const CONFIG = {
+  client:   { name:"Bright Smile Dental", area:"Croydon · Dental clinic" },
+  currency: "£",
+  valuePerPatient: 200,
+
+  kpis: [
+    { name:"Website visitors",  value:4210, delta:+12, type:"live"  },
+    { name:"Leads captured",    value:142,  delta:+23, type:"live", note:"WhatsApp + contact + form" },
+    { name:"WhatsApp enquiries",value:81,   delta:+18, type:"live"  },
+    { name:"New Google reviews",value:9,    delta:+5,  type:"live", suffix:"★4.7" },
+    { name:'"Near me" ranking', value:"#3", delta:+3,  type:"live", isRank:true },
+    { name:"New patients",      value:28,   delta:+6,  type:"est"   }
+  ],
+
+  funnel: [
+    { name:"Website visitors", sub:"saw the site",        count:4210, type:"live" },
+    { name:"Engaged",          sub:"clicked call / chat", count:320,  type:"live" },
+    { name:"WhatsApp chats",   sub:"started a message",   count:81,   type:"live" },
+    { name:"New patients",     sub:"booked & treated",    count:28,   type:"est"  }
+  ],
+
+  trend: {
+    visitors:[110,98,125,140,132,150,128,118,160,172,155,148,180,165,158,176,190,182,170,195,205,188,198,210,196,212,220,205,214,228],
+    leads:   [4,3,5,6,5,7,5,4,8,9,7,6,10,8,7,9,11,10,8,12,13,10,11,14,12,13,15,12,14,16]
+  },
+
+  reputation:{ rating:4.7, total:214, newThisMonth:9 },
+  ranks:[
+    { kw:"dentist near me",      pos:3,  change:+3 },
+    { kw:"emergency dentist",    pos:5,  change:+2 },
+    { kw:"teeth whitening",      pos:8,  change:-1 },
+    { kw:"invisalign croydon",   pos:4,  change:+1 }
+  ],
+
+  recommendations:[
+    { tag:"Missed opportunity", orange:true, html:"A nearby clinic ranks #1 for <b>“emergency dentist”</b> — you have no emergency page. ~190 searches/month locally." },
+    { tag:"Reviews",  html:"You have <b>9 fewer reviews</b> than the top-ranked clinic. Auto-request a review after every visit to close the gap." },
+    { tag:"Speed",    orange:true, html:"Your site loads in <b>4.1s</b> on mobile. Visitors leave after 3s — a fix could recover ~12% of leads." },
+    { tag:"Best channel", html:"Instagram drove <b>81 WhatsApp enquiries</b> — your strongest source. Increase posting to grow it." }
+  ],
+
+  advanced:{ crawl:"92 / 100", meta:"96% pages", schema:"Present", lcp:"4.1s", indexed:"38 pages" }
+};
+
+const fmt = n => typeof n==="number" ? n.toLocaleString("en-GB") : n;
+const money = n => CONFIG.currency + Math.round(n).toLocaleString("en-GB");
+
+function render(){
+/* header */
+document.getElementById("clientName").textContent = CONFIG.client.name;
+document.getElementById("clientSub").textContent  = CONFIG.client.area;
+
+/* hero */
+const patients = CONFIG.kpis.find(k=>k.name==="New patients").value;
+const leads    = CONFIG.kpis.find(k=>k.name==="Leads captured").value;
+const revenue  = patients * CONFIG.valuePerPatient;
+document.getElementById("heroAmt").innerHTML = "<span>"+money(revenue)+"</span> this month";
+document.getElementById("heroChain").innerHTML =
+  "From <b>"+fmt(leads)+"</b> leads → <b>"+patients+"</b> new patients"+
+  '<span class="hero-up">▲ 21% vs last month</span>';
+document.getElementById("heroNote").textContent =
+  patients+" patients × "+money(CONFIG.valuePerPatient)+" average value";
+
+/* kpis */
+document.getElementById("kpis").innerHTML = CONFIG.kpis.map((k,i)=>{
+  let delta;
+  if(k.delta===0) delta='<div class="kpi-delta flat">— no change</div>';
+  else if(k.isRank) delta='<div class="kpi-delta '+(k.delta>0?'up':'down')+'">'+(k.delta>0?'▲ up ':'▼ down ')+Math.abs(k.delta)+' spots</div>';
+  else delta='<div class="kpi-delta '+(k.delta>0?'up':'down')+'">'+(k.delta>0?'▲ ':'▼ ')+Math.abs(k.delta)+'%</div>';
+  const suffix = k.suffix? ' <small>'+k.suffix+'</small>':'';
+  return `<div class="kpi fade" style="animation-delay:${.06+i*0.03}s">
+    <div class="kpi-top"><div class="kpi-name">${k.name}${k.note?'<br><span style="font-size:11px;color:var(--dim)">'+k.note+'</span>':''}</div>
+      <span class="badge ${k.type==='live'?'b-live':'b-est'}">${k.type==='live'?'Live':'Est'}</span></div>
+    <div class="kpi-val">${fmt(k.value)}${suffix}</div>${delta}</div>`;
+}).join("");
+
+/* funnel */
+const funnelTop = CONFIG.funnel[0].count;
+document.getElementById("funnel").innerHTML = CONFIG.funnel.map((s,i)=>{
+  const pct = Math.max((s.count/funnelTop)*100, 4);
+  let drop="";
+  if(i>0){ const prev=CONFIG.funnel[i-1].count; const d=Math.round((s.count/prev)*100);
+    drop=`<div class="fdrop">${d}% of previous step continued</div>`; }
+  return `${drop}<div class="fstage">
+    <div class="fname">${s.name}<b>${s.sub}</b></div>
+    <div class="ftrack"><div class="ffill ${s.type==='est'?'est':''}" style="width:0" data-w="${pct}"></div></div>
+    <div class="fcount">${fmt(s.count)}</div></div>`;
+}).join("");
+requestAnimationFrame(()=>document.querySelectorAll(".ffill").forEach(f=>f.style.width=f.dataset.w+"%"));
+
+/* trend chart (dependency-free SVG) */
+function lineChart(el, v, l){
+  const W=560,H=150,pad=6;
+  const max=Math.max(...v)*1.1, lmax=Math.max(...l)*1.15;
+  const X=i=>pad+(i/(v.length-1))*(W-pad*2);
+  const Yv=d=>H-pad-(d/max)*(H-pad*2);
+  const Yl=d=>H-pad-(d/lmax)*(H-pad*2);
+  const path=(arr,Y)=>arr.map((d,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(d).toFixed(1)).join(' ');
+  const area=path(v,Yv)+` L${(W-pad)} ${H-pad} L${pad} ${H-pad} Z`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block" role="img" aria-label="Visitors and leads trend, last 30 days">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#378add" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#378add" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${path(v,Yv)}" fill="none" stroke="#378add" stroke-width="2" stroke-linejoin="round"/>
+    <path d="${path(l,Yl)}" fill="none" stroke="#c7ff3f" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
+}
+lineChart(document.getElementById("chart"), CONFIG.trend.visitors, CONFIG.trend.leads);
+
+/* reputation + ranks */
+document.getElementById("repScore").textContent = CONFIG.reputation.rating.toFixed(1);
+document.getElementById("repSub").innerHTML =
+  CONFIG.reputation.total+" reviews · <b style='color:var(--good)'>+"+CONFIG.reputation.newThisMonth+"</b> this month";
+const full=Math.floor(CONFIG.reputation.rating);
+document.getElementById("repStars").textContent="★".repeat(full)+"☆".repeat(5-full);
+document.getElementById("ranks").innerHTML = CONFIG.ranks.map(r=>{
+  const up=r.change>0, flat=r.change===0;
+  const tag=flat?'<span class="flat">—</span>':'<span class="'+(up?'up':'down')+'">'+(up?'▲':'▼')+Math.abs(r.change)+'</span>';
+  return `<div class="rank"><span class="rank-kw">${r.kw}</span>
+    <span class="rank-pos">#${r.pos} ${tag}</span></div>`;
+}).join("");
+
+/* recommendations */
+document.getElementById("recs").innerHTML = CONFIG.recommendations.map(r=>
+  `<div class="rec ${r.orange?'orange':''}"><div class="rec-tag">${r.tag}</div>
+   <div class="rec-txt">${r.html}</div></div>`).join("");
+
+/* advanced */
+const a=CONFIG.advanced;
+a1.textContent=a.crawl; a2.textContent=a.meta; a3.textContent=a.schema; a4.textContent=a.lcp; a5.textContent=a.indexed;
+const btn=document.getElementById("advBtn"), body=document.getElementById("advBody"), caret=document.getElementById("advCaret");
+btn.addEventListener("click",()=>{ const open=body.classList.toggle("open");
+  btn.setAttribute("aria-expanded",open); caret.textContent=open?"▴":"▾"; });
+} /* end render */
+
+/* safety net: if reveal animation never runs, force content visible */
+function showAll(){document.querySelectorAll(".fade").forEach(e=>{
+  if(getComputedStyle(e).opacity==="0"){e.style.opacity="1";e.style.transform="none";}});}
+window.addEventListener("load",()=>setTimeout(showAll,600));
+
+/* bootstrap: load this client's LIVE data if the URL has ?client=ID,
+   e.g.  dashboard.html?client=bright-smile-dental
+   Otherwise show the built-in demo numbers above. */
+const API="https://acceio-api.onrender.com";
+const cid=new URLSearchParams(location.search).get("client");
+if(cid){
+  fetch(API+"/api/acceio/dashboard/"+encodeURIComponent(cid))
+    .then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(d=>{ Object.assign(CONFIG,d); render(); })
+    .catch(()=>render());   /* backend unreachable → fall back to demo */
+}else{
+  render();
+}
+</script>
+</body>
+</html>

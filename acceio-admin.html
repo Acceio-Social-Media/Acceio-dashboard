@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Acceio · Add Client</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0f;--card:#14161f;--card2:#171a24;--line:#23252e;--line2:#2b2e3a;
+  --txt:#fff;--muted:#9aa0ab;--dim:#646a76;--lime:#c7ff3f;--orange:#ff6a2c;--good:#4ade80;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--txt);
+  -webkit-font-smoothing:antialiased;line-height:1.5;padding:24px;max-width:720px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--lime);color:#000;
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px}
+h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--muted);font-size:14px;margin:4px 0 26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:20px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+label{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin:14px 0 6px}
+label small{color:var(--dim);font-weight:500}
+input,select{width:100%;background:var(--card2);border:1px solid var(--line2);border-radius:10px;
+  padding:11px 13px;color:var(--txt);font-size:14px;font-family:inherit}
+input:focus,select:focus{outline:2px solid var(--lime);outline-offset:1px;border-color:transparent}
+.hint{font-size:11.5px;color:var(--dim);margin-top:5px}
+.hint a{color:var(--lime)}
+.btn{margin-top:22px;width:100%;background:var(--lime);color:#000;border:none;border-radius:11px;
+  padding:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer}
+.btn:hover{background:#d4ff5a}
+.btn:disabled{opacity:.5;cursor:default}
+.msg{margin-top:14px;font-size:13.5px;font-weight:600;display:none}
+.msg.ok{color:var(--good);display:block} .msg.err{color:var(--bad);display:block}
+.result{display:none;margin-top:18px;border-top:1px solid var(--line);padding-top:18px}
+.result.show{display:block}
+.snip-label{font-size:12px;color:var(--muted);font-weight:700;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.snip{display:flex;gap:8px;align-items:stretch}
+.snip code{flex:1;background:#0d0f15;border:1px solid var(--line2);border-radius:9px;padding:11px 13px;
+  font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#c9d4e2;overflow-x:auto;white-space:nowrap}
+.copy{background:var(--card2);border:1px solid var(--line2);color:var(--txt);border-radius:9px;
+  padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.copy:hover{border-color:var(--dim)}
+h2{font-size:15px;font-weight:800;margin:0 0 4px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:16px}
+.client{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:13px 0;border-top:1px solid var(--line)}
+.client:first-of-type{border-top:none}
+.cname{font-size:14px;font-weight:700} .carea{font-size:12px;color:var(--muted)}
+.open{background:var(--card2);border:1px solid var(--line2);color:var(--lime);border-radius:8px;
+  padding:7px 13px;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap}
+.open:hover{border-color:var(--lime)}
+.empty{color:var(--dim);font-size:13px;padding:6px 0}
+.hidden{display:none}
+.signout{background:none;border:none;color:var(--dim);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="brand"><div class="logo">A</div><h1>Add a client</h1></div>
+<p class="lead">Sign in with your Acceio admin account, then onboard clients. Each one takes about 30 seconds.</p>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <label>Admin username</label>
+  <input id="user" placeholder="admin" autocomplete="username">
+  <label>Password</label>
+  <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+  <button class="btn" id="loginBtn">Sign in</button>
+  <div class="msg" id="loginMsg"></div>
+</div>
+
+<!-- APP (hidden until logged in) -->
+<div id="app" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div><label>Business name</label><input id="name" placeholder="Bright Smile Dental" autocomplete="off"></div>
+      <div><label>Type / area</label><input id="area" placeholder="Croydon · Dental clinic" autocomplete="off"></div>
+    </div>
+    <label>Client ID <small>· auto-filled, used in links — leave it</small></label>
+    <input id="cid" placeholder="bright-smile-dental" autocomplete="off">
+    <div class="row">
+      <div><label>Currency</label>
+        <select id="currency"><option>£</option><option>₹</option><option>$</option><option>€</option></select></div>
+      <div><label>Value per customer <small>· avg revenue</small></label><input id="value" type="number" placeholder="200"></div>
+    </div>
+    <label>Leads that become customers <small>· your estimate, %</small></label>
+    <input id="conv" type="number" placeholder="20" value="20">
+    <div class="hint">If roughly 1 in 5 enquiries books, that's 20%. You can refine it later.</div>
+    <label>Google Place ID <small>· for reviews &amp; rating</small></label>
+    <input id="placeId" placeholder="ChIJ..." autocomplete="off">
+    <div class="hint">Find it with Google's <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener">Place ID finder</a>.</div>
+    <label>Keywords to track <small>· comma separated</small></label>
+    <input id="keywords" placeholder="dentist near me, emergency dentist, teeth whitening" autocomplete="off">
+    <button class="btn" id="saveBtn">Save client</button>
+    <div class="msg" id="msg"></div>
+
+    <div class="result" id="result">
+      <div class="snip-label">1 · Paste this on their website, before &lt;/body&gt;</div>
+      <div class="snip"><code id="embed"></code><button class="copy" data-t="embed">Copy</button></div>
+      <div class="snip-label">2 · Send them this dashboard link</div>
+      <div class="snip"><code id="dash"></code><button class="copy" data-t="dash">Copy</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><h2>Your clients</h2><div class="sub">Tap to open their live dashboard.</div></div>
+      <button class="signout" id="signout">Sign out</button>
+    </div>
+    <div id="list"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+var API = "https://acceio-api.onrender.com";                         // your backend
+var PORTAL = location.origin + location.pathname.replace(/[^/]*$/, ""); // where these pages live
+var token = sessionStorage.getItem("ab_token") || null;              // shared with your portal if same origin
+
+var $ = function(id){ return document.getElementById(id); };
+var slug = function(s){ return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); };
+
+function showApp(){ $("loginCard").classList.add("hidden"); $("app").classList.remove("hidden"); loadClients(); }
+function showLogin(){ $("app").classList.add("hidden"); $("loginCard").classList.remove("hidden"); }
+
+// try existing token on load
+if (token) { verifyThenShow(); } else { showLogin(); }
+
+function verifyThenShow(){
+  // a quick authorized call: if it works, token is good
+  fetch(API + "/api/acceio/clients", { headers: { Authorization: "Bearer " + token } })
+    .then(function(r){ if (r.ok) showApp(); else { token=null; sessionStorage.removeItem("ab_token"); showLogin(); } })
+    .catch(function(){ showApp(); }); // backend asleep — let them in; calls will retry
+}
+
+$("loginBtn").addEventListener("click", async function(){
+  var msg = $("loginMsg"); msg.className="msg"; msg.style.display="none";
+  $("loginBtn").disabled = true; $("loginBtn").textContent = "Signing in…";
+  try {
+    var r = await fetch(API + "/api/login", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: $("user").value.trim(), password: $("pass").value })
+    });
+    var d = await r.json();
+    if (!r.ok) { msg.className="msg err"; msg.textContent = "❌ " + (d.error || "Login failed."); return; }
+    token = d.token; sessionStorage.setItem("ab_token", token);
+    showApp();
+  } catch(e) {
+    msg.className="msg err"; msg.textContent = "❌ Couldn't reach the backend. Check the API address at the top of this file.";
+  } finally { $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in"; }
+});
+
+$("signout").addEventListener("click", function(){ token=null; sessionStorage.removeItem("ab_token"); showLogin(); });
+
+// auto-fill client ID from business name
+$("name").addEventListener("input", function(){ if (!$("cid").dataset.touched) $("cid").value = slug($("name").value); });
+$("cid").addEventListener("input", function(){ $("cid").dataset.touched = "1"; });
+
+// save the client
+$("saveBtn").addEventListener("click", async function(){
+  var id = slug($("cid").value || $("name").value);
+  var msg = $("msg");
+  if (!id || !$("name").value) { msg.className="msg err"; msg.textContent="Add a business name first."; return; }
+  var body = {
+    name: $("name").value.trim(), area: $("area").value.trim(), currency: $("currency").value,
+    valuePerPatient: Number($("value").value) || 0,
+    conversion: (Number($("conv").value) || 20) / 100,
+    placeId: $("placeId").value.trim(),
+    keywords: $("keywords").value.split(",").map(function(k){return k.trim();}).filter(Boolean)
+  };
+  $("saveBtn").disabled = true; msg.className="msg"; msg.style.display="none";
+  try {
+    var r = await fetch(API + "/api/acceio/client/" + encodeURIComponent(id), {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    if (r.status === 401 || r.status === 403) { showLogin(); return; }
+    if (!r.ok) throw 0;
+    msg.className="msg ok"; msg.textContent="✓ Saved. " + body.name + " is onboarded.";
+    $("embed").textContent = '<script src="' + API + '/acceio.js" data-client="' + id + '" defer><\/script>';
+    $("dash").textContent  = PORTAL + "acceio-growth-dashboard.html?client=" + id;
+    $("result").classList.add("show");
+    loadClients();
+  } catch(e) {
+    msg.className="msg err"; msg.textContent="Couldn't save. Is the backend running?";
+  } finally { $("saveBtn").disabled = false; }
+});
+
+// copy buttons
+document.querySelectorAll(".copy").forEach(function(b){
+  b.addEventListener("click", function(){
+    navigator.clipboard.writeText($(b.dataset.t).textContent).then(function(){
+      b.textContent="Copied"; setTimeout(function(){ b.textContent="Copy"; }, 1200);
+    });
+  });
+});
+
+// list existing clients
+async function loadClients(){
+  try {
+    var r = await fetch(API + "/api/acceio/clients", { headers: { Authorization: "Bearer " + token } });
+    if (r.status === 401 || r.status === 403) { showLogin(); return; }
+    var list = await r.json();
+    if (!list.length) { $("list").innerHTML='<div class="empty">No clients yet — add your first one above.</div>'; return; }
+    $("list").innerHTML = list.map(function(c){
+      return '<div class="client"><div><div class="cname">' + c.name + '</div><div class="carea">' + (c.area||c.id) + '</div></div>'
+        + '<a class="open" href="acceio-growth-dashboard.html?client=' + encodeURIComponent(c.id) + '">Open dashboard</a></div>';
+    }).join("");
+  } catch(e) {
+    $("list").innerHTML='<div class="empty">Can\'t reach the backend yet. Once it\'s live, your clients show here.</div>';
+  }
+}
+</script>
+</body>
+</html>
